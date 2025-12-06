@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beta Hedge Trading Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        // Icons SVG
+        const Icons = {
+            Calculator: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`,
+            BarChart: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
+            TrendingUp: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`,
+            Upload: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>`,
+            AlertCircle: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+            ArrowRight: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`
+        };
+
+        class BetaHedgeCalculator {
+            constructor() {
+                this.state = {
+                    activeTab: 'calculator',
+                    asset1Data: '',
+                    asset2Data: '',
+                    betaResults: null,
+                    period: 30,
+                    capital: 10000,
+                    asset1Vol: 70,
+                    asset2Vol: 90,
+                    leverage: 1,
+                    useBetaFromCalc: false
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.render();
+                this.attachEvents();
+            }
+
+            parsePriceData(text) {
+                const lines = text.trim().split('\n');
+                const prices = [];
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    if (line.includes(',')) {
+                        const parts = line.split(',');
+                        const price = parseFloat(parts[parts.length - 1]);
+                        if (!isNaN(price)) prices.push(price);
+                    } else {
+                        const price = parseFloat(line);
+                        if (!isNaN(price)) prices.push(price);
+                    }
+                }
+                return prices;
+            }
+
+            calculateReturns(prices) {
+                const returns = [];
+                for (let i = 1; i < prices.length; i++) {
+                    returns.push((prices[i] - prices[i-1]) / prices[i-1]);
+                }
+                return returns;
+            }
+
+            calculateVolatility(returns) {
+                const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+                const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
+                const dailyVol = Math.sqrt(variance);
+                const annualizedVol = dailyVol * Math.sqrt(365) * 100;
+                return { dailyVol, annualizedVol };
+            }
+
+            calculateBeta(returns1, returns2) {
+                const n = Math.min(returns1.length, returns2.length);
+                const mean1 = returns1.slice(0, n).reduce((sum, r) => sum + r, 0) / n;
+                const mean2 = returns2.slice(0, n).reduce((sum, r) => sum + r, 0) / n;
+                let covariance = 0, variance1 = 0;
+                for (let i = 0; i < n; i++) {
+                    const diff1 = returns1[i] - mean1;
+                    const diff2 = returns2[i] - mean2;
+                    covariance += diff1 * diff2;
+                    variance1 += diff1 * diff1;
+                }
+                covariance /= n;
+                variance1 /= n;
+                const beta = covariance / variance1;
+                let variance2 = 0;
+                for (let i = 0; i < n; i++) {
+                    variance2 += Math.pow(returns2[i] - mean2, 2);
+                }
+                variance2 /= n;
+                const correlation = covariance / (Math.sqrt(variance1) * Math.sqrt(variance2));
+                const rSquared = correlation * correlation;
+                return { beta, rSquared, correlation };
+            }
+
+            calculateMetrics() {
+                try {
+                    const prices1 = this.parsePriceData(this.state.asset1Data);
+                    const prices2 = this.parsePriceData(this.state.asset2Data);
+                    if (prices1.length < 2 || prices2.length < 2) {
+                        alert('Besoin au moins 2 prix');
+                        return;
+                    }
+                    if (prices1.length !== prices2.length) {
+                        alert('Même nombre de données requis');
+                        return;
+                    }
+                    const returns1 = this.calculateReturns(prices1);
+                    const returns2 = this.calculateReturns(prices2);
+                    const vol1 = this.calculateVolatility(returns1);
+                    const vol2 = this.calculateVolatility(returns2);
+                    const betaStats = this.calculateBeta(returns1, returns2);
+                    this.state.betaResults = {
+                        asset1: { prices: prices1.length, volatility: vol1.annualizedVol, dailyVol: vol1.dailyVol * 100 },
+                        asset2: { prices: prices2.length, volatility: vol2.annualizedVol, dailyVol: vol2.dailyVol * 100 },
+                        beta: betaStats.beta,
+                        rSquared: betaStats.rSquared,
+                        correlation: betaStats.correlation
+                    };
+                    this.state.asset1Vol = vol1.annualizedVol;
+                    this.state.asset2Vol = vol2.annualizedVol;
+                    this.render();
+                } catch (error) {
+                    alert('Erreur: ' + error.message);
+                }
+            }
+
+            generateSampleData() {
+                let ethPrice = 3500;
+                const ethPrices = [ethPrice];
+                for (let i = 0; i < this.state.period - 1; i++) {
+                    ethPrice *= (1 + (Math.random() - 0.5) * 0.03);
+                    ethPrices.push(ethPrice);
+                }
+                let solPrice = 140;
+                const solPrices = [solPrice];
+                for (let i = 0; i < this.state.period - 1; i++) {
+                    solPrice *= (1 + (Math.random() - 0.5) * 0.04);
+                    solPrices.push(solPrice);
+                }
+                this.state.asset1Data = ethPrices.map(p => p.toFixed(2)).join('\n');
+                this.state.asset2Data = solPrices.map(p => p.toFixed(2)).join('\n');
+                this.render();
+            }
+
+            useBeta() {
+                if (this.state.betaResults) {
+                    this.state.activeTab = 'calculator';
+                    this.state.useBetaFromCalc = true;
+                    this.render();
+                }
+            }
+
+            render() {
+                const beta = this.state.useBetaFromCalc && this.state.betaResults 
+                    ? this.state.betaResults.beta 
+                    : (this.state.asset2Vol / this.state.asset1Vol);
+                
+                const totalCap = this.state.capital / 2;
+                const asset1Size = totalCap / (1 + beta);
+                const asset2Size = asset1Size * beta;
+
+                document.getElementById('app').innerHTML = `
+                    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 p-6">
+                        <div class="max-w-7xl mx-auto">
+                            <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700 p-6 mb-6">
+                                <div class="flex items-center gap-3">
+                                    ${Icons.Calculator()}
+                                    <h1 class="text-3xl font-bold text-white">Beta Hedge Trading Calculator</h1>
+                                </div>
+                                <p class="text-slate-300 mt-2">Calcule ton beta et optimise tes positions</p>
+                            </div>
+
+                            <div class="flex gap-2 mb-6">
+                                <button id="tab-calculator" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab === 'calculator' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}">
+                                    ${Icons.Calculator()} Calculateur
+                                </button>
+                                <button id="tab-beta" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab === 'beta' ? 'bg-purple-600 text-white' : 'bg-slate-700 text-slate-300'}">
+                                    ${Icons.BarChart()} Beta
+                                </button>
+                            </div>
+
+                            ${this.state.activeTab === 'calculator' ? this.renderCalculator(beta, asset1Size, asset2Size, totalCap) : this.renderBeta()}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderCalculator(beta, asset1Size, asset2Size, totalCap) {
+                const lev = this.state.leverage;
+                return `
+                    <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
+                        ${this.state.betaResults && this.state.useBetaFromCalc ? `
+                            <div class="mb-6 bg-green-900/30 border border-green-600 rounded-lg p-4">
+                                <p class="text-green-300 font-semibold">Beta: ${this.state.betaResults.beta.toFixed(3)} (R² = ${(this.state.betaResults.rSquared * 100).toFixed(1)}%)</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Capital Total (USD)</label>
+                                    <input id="capital" type="number" value="${this.state.capital}" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol Asset 1 (%)</label>
+                                    <input id="vol1" type="number" value="${this.state.asset1Vol}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Leverage</label>
+                                    <input id="leverage" type="number" value="${this.state.leverage}" min="1" max="10" step="0.5" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol Asset 2 (%)</label>
+                                    <input id="vol2" type="number" value="${this.state.asset2Vol}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-8">
+                            <p class="text-blue-300 font-medium">Beta: ${beta.toFixed(3)}</p>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-gradient-to-br from-green-900/20 to-slate-800/20 border border-green-700/50 rounded-xl p-6">
+                                <h2 class="text-xl font-bold text-green-400 mb-4">📈 Plateforme 1</h2>
+                                <div class="space-y-3">
+                                    <div class="bg-slate-700/50 rounded-lg p-4">
+                                        <p class="text-sm text-slate-400">LONG Asset 1</p>
+                                        <p class="text-2xl font-bold text-green-400">$${(asset1Size * lev).toFixed(2)}</p>
+                                        <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
+                                    </div>
+                                    <div class="bg-slate-700/50 rounded-lg p-4">
+                                        <p class="text-sm text-slate-400">SHORT Asset 2</p>
+                                        <p class="text-2xl font-bold text-red-400">$${(asset2Size * lev).toFixed(2)}</p>
+                                        <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-red-900/20 to-slate-800/20 border border-red-700/50 rounded-xl p-6">
+                                <h2 class="text-xl font-bold text-red-400 mb-4">📉 Plateforme 2</h2>
+                                <div class="space-y-3">
+                                    <div class="bg-slate-700/50 rounded-lg p-4">
+                                        <p class="text-sm text-slate-400">SHORT Asset 1</p>
+                                        <p class="text-2xl font-bold text-red-400">$${(asset1Size * lev).toFixed(2)}</p>
+                                        <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
+                                    </div>
+                                    <div class="bg-slate-700/50 rounded-lg p-4">
+                                        <p class="text-sm text-slate-400">LONG Asset 2</p>
+                                        <p class="text-2xl font-bold text-green-400">$${(asset2Size * lev).toFixed(2)}</p>
+                                        <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 bg-slate-700/30 border border-slate-600 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Vérification Delta Neutral</h3>
+                            <div class="grid md:grid-cols-3 gap-4 text-center">
+                                <div><p class="text-sm text-slate-400">Asset 1</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
+                                <div><p class="text-sm text-slate-400">Asset 2</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
+                                <div><p class="text-sm text-slate-400">Direction</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Hedgé</p></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderBeta() {
+                return `
+                    <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
+                        <div class="mb-6 flex gap-4">
+                            <button id="generate-sample" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Générer Test</button>
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm text-slate-300">Période:</label>
+                                <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-20 bg-slate-700 text-white rounded px-3 py-1">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label class="block text-lg font-semibold text-white mb-3">Asset 1</label>
+                                <textarea id="asset1-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset1Data}</textarea>
+                                <p class="text-xs text-slate-400 mt-2">${this.state.asset1Data ? this.parsePriceData(this.state.asset1Data).length + ' prix' : 'En attente'}</p>
+                            </div>
+                            <div>
+                                <label class="block text-lg font-semibold text-white mb-3">Asset 2</label>
+                                <textarea id="asset2-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset2Data}</textarea>
+                                <p class="text-xs text-slate-400 mt-2">${this.state.asset2Data ? this.parsePriceData(this.state.asset2Data).length + ' prix' : 'En attente'}</p>
+                            </div>
+                        </div>
+
+                        <button id="calculate-beta" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg mb-6">Calculer Beta</button>
+
+                        ${this.state.betaResults ? `
+                            <button id="use-beta" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg mb-6">Utiliser ce Beta ${Icons.ArrowRight()}</button>
+                            <div class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-2 border-purple-500 rounded-xl p-6">
+                                <h2 class="text-2xl font-bold text-white mb-4">Résultats</h2>
+                                <div class="grid md:grid-cols-3 gap-6 text-center">
+                                    <div><p class="text-sm text-slate-300 mb-2">Beta</p><p class="text-4xl font-bold text-purple-400">${this.state.betaResults.beta.toFixed(3)}</p></div>
+                                    <div><p class="text-sm text-slate-300 mb-2">Corrélation</p><p class="text-4xl font-bold text-blue-400">${this.state.betaResults.correlation.toFixed(3)}</p></div>
+                                    <div><p class="text-sm text-slate-300 mb-2">R²</p><p class="text-4xl font-bold text-green-400">${(this.state.betaResults.rSquared * 100).toFixed(1)}%</p></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            attachEvents() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.id === 'tab-calculator') {
+                        this.state.activeTab = 'calculator';
+                        this.render();
+                    }
+                    if (e.target.id === 'tab-beta') {
+                        this.state.activeTab = 'beta';
+                        this.render();
+                    }
+                    if (e.target.id === 'generate-sample') {
+                        this.generateSampleData();
+                    }
+                    if (e.target.id === 'calculate-beta') {
+                        this.calculateMetrics();
+                    }
+                    if (e.target.id === 'use-beta') {
+                        this.useBeta();
+                    }
+                });
+
+                document.addEventListener('input', (e) => {
+                    if (e.target.id === 'capital') {
+                        this.state.capital = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'vol1') {
+                        this.state.asset1Vol = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'vol2') {
+                        this.state.asset2Vol = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'leverage') {
+                        this.state.leverage = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'period') {
+                        this.state.period = Number(e.target.value);
+                    }
+                    if (e.target.id === 'asset1-data') {
+                        this.state.asset1Data = e.target.value;
+                    }
+                    if (e.target.id === 'asset2-data') {
+                        this.state.asset2Data = e.target.value;
+                    }
+                });
+            }
+        }
+
+        new BetaHedgeCalculator();
+    </script>
+</body>
+</html>
