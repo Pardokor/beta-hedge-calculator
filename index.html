@@ -10,14 +10,37 @@
     <div id="app"></div>
     
     <script>
-        // Icons SVG
         const Icons = {
             Calculator: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`,
             BarChart: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
             TrendingUp: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`,
             Upload: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>`,
             AlertCircle: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
-            ArrowRight: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`
+            ArrowRight: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`,
+            Download: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>`
+        };
+
+        const CRYPTO_PAIRS = {
+            'ethereum': { name: 'ETH', id: 'ethereum' },
+            'bitcoin': { name: 'BTC', id: 'bitcoin' },
+            'solana': { name: 'SOL', id: 'solana' },
+            'binancecoin': { name: 'BNB', id: 'binancecoin' },
+            'cardano': { name: 'ADA', id: 'cardano' },
+            'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
+            'polkadot': { name: 'DOT', id: 'polkadot' },
+            'matic-network': { name: 'MATIC', id: 'matic-network' },
+            'chainlink': { name: 'LINK', id: 'chainlink' },
+            'uniswap': { name: 'UNI', id: 'uniswap' },
+            'arbitrum': { name: 'ARB', id: 'arbitrum' },
+            'optimism': { name: 'OP', id: 'optimism' },
+            'sui': { name: 'SUI', id: 'sui' },
+            'aptos': { name: 'APT', id: 'aptos' },
+            'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
+            'celestia': { name: 'TIA', id: 'celestia' },
+            'sei-network': { name: 'SEI', id: 'sei-network' },
+            'near': { name: 'NEAR', id: 'near' },
+            'render-token': { name: 'RNDR', id: 'render-token' },
+            'the-graph': { name: 'GRT', id: 'the-graph' }
         };
 
         class BetaHedgeCalculator {
@@ -32,7 +55,12 @@
                     asset1Vol: 70,
                     asset2Vol: 90,
                     leverage: 1,
-                    useBetaFromCalc: false
+                    useBetaFromCalc: false,
+                    selectedPair1: 'ethereum',
+                    selectedPair2: 'solana',
+                    loading: false,
+                    asset1Name: 'ETH',
+                    asset2Name: 'SOL'
                 };
                 
                 this.init();
@@ -41,6 +69,51 @@
             init() {
                 this.render();
                 this.attachEvents();
+            }
+
+            async fetchCryptoData(coinId, days) {
+                const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`;
+                const params = new URLSearchParams({
+                    vs_currency: 'usd',
+                    days: days.toString(),
+                    interval: 'daily'
+                });
+
+                const response = await fetch(`${url}?${params}`);
+                if (!response.ok) throw new Error('Erreur API CoinGecko');
+                
+                const data = await response.json();
+                return data.prices.map(p => p[1]);
+            }
+
+            async fetchPairData() {
+                this.state.loading = true;
+                this.render();
+
+                try {
+                    const coin1 = CRYPTO_PAIRS[this.state.selectedPair1];
+                    const coin2 = CRYPTO_PAIRS[this.state.selectedPair2];
+                    
+                    this.state.asset1Name = coin1.name;
+                    this.state.asset2Name = coin2.name;
+
+                    const [prices1, prices2] = await Promise.all([
+                        this.fetchCryptoData(coin1.id, this.state.period),
+                        this.fetchCryptoData(coin2.id, this.state.period)
+                    ]);
+
+                    this.state.asset1Data = prices1.map(p => p.toFixed(2)).join('\n');
+                    this.state.asset2Data = prices2.map(p => p.toFixed(2)).join('\n');
+                    
+                    this.state.loading = false;
+                    this.render();
+                    
+                    alert(`✅ ${prices1.length} prix récupérés pour ${coin1.name} et ${coin2.name}`);
+                } catch (error) {
+                    this.state.loading = false;
+                    this.render();
+                    alert('❌ Erreur: ' + error.message);
+                }
             }
 
             parsePriceData(text) {
@@ -200,7 +273,7 @@
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
                         ${this.state.betaResults && this.state.useBetaFromCalc ? `
                             <div class="mb-6 bg-green-900/30 border border-green-600 rounded-lg p-4">
-                                <p class="text-green-300 font-semibold">Beta: ${this.state.betaResults.beta.toFixed(3)} (R² = ${(this.state.betaResults.rSquared * 100).toFixed(1)}%)</p>
+                                <p class="text-green-300 font-semibold">✓ Beta calculé: ${this.state.betaResults.beta.toFixed(3)} | ${this.state.asset1Name}/${this.state.asset2Name} | R² = ${(this.state.betaResults.rSquared * 100).toFixed(1)}%</p>
                             </div>
                         ` : ''}
 
@@ -211,8 +284,8 @@
                                     <input id="capital" type="number" value="${this.state.capital}" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol Asset 1 (%)</label>
-                                    <input id="vol1" type="number" value="${this.state.asset1Vol}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol ${this.state.asset1Name} (%)</label>
+                                    <input id="vol1" type="number" value="${this.state.asset1Vol.toFixed(2)}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
                                 </div>
                             </div>
                             <div class="space-y-4">
@@ -221,14 +294,15 @@
                                     <input id="leverage" type="number" value="${this.state.leverage}" min="1" max="10" step="0.5" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol Asset 2 (%)</label>
-                                    <input id="vol2" type="number" value="${this.state.asset2Vol}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Vol ${this.state.asset2Name} (%)</label>
+                                    <input id="vol2" type="number" value="${this.state.asset2Vol.toFixed(2)}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
                                 </div>
                             </div>
                         </div>
 
                         <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-8">
-                            <p class="text-blue-300 font-medium">Beta: ${beta.toFixed(3)}</p>
+                            <p class="text-blue-300 font-medium">Beta ${this.state.asset2Name}/${this.state.asset1Name}: ${beta.toFixed(3)}</p>
+                            <p class="text-sm text-slate-400 mt-1">${this.state.asset2Name} est ${beta > 1 ? (beta * 100 - 100).toFixed(0) + '% plus volatile' : (100 - beta * 100).toFixed(0) + '% moins volatile'} que ${this.state.asset1Name}</p>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6">
@@ -236,15 +310,19 @@
                                 <h2 class="text-xl font-bold text-green-400 mb-4">📈 Plateforme 1</h2>
                                 <div class="space-y-3">
                                     <div class="bg-slate-700/50 rounded-lg p-4">
-                                        <p class="text-sm text-slate-400">LONG Asset 1</p>
+                                        <p class="text-sm text-slate-400">LONG ${this.state.asset1Name}</p>
                                         <p class="text-2xl font-bold text-green-400">$${(asset1Size * lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
                                     </div>
                                     <div class="bg-slate-700/50 rounded-lg p-4">
-                                        <p class="text-sm text-slate-400">SHORT Asset 2</p>
+                                        <p class="text-sm text-slate-400">SHORT ${this.state.asset2Name}</p>
                                         <p class="text-2xl font-bold text-red-400">$${(asset2Size * lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
                                     </div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-700">
+                                    <p class="text-sm text-slate-400">Capital utilisé</p>
+                                    <p class="text-lg font-semibold text-white">$${totalCap.toFixed(2)}</p>
                                 </div>
                             </div>
 
@@ -252,25 +330,47 @@
                                 <h2 class="text-xl font-bold text-red-400 mb-4">📉 Plateforme 2</h2>
                                 <div class="space-y-3">
                                     <div class="bg-slate-700/50 rounded-lg p-4">
-                                        <p class="text-sm text-slate-400">SHORT Asset 1</p>
+                                        <p class="text-sm text-slate-400">SHORT ${this.state.asset1Name}</p>
                                         <p class="text-2xl font-bold text-red-400">$${(asset1Size * lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
                                     </div>
                                     <div class="bg-slate-700/50 rounded-lg p-4">
-                                        <p class="text-sm text-slate-400">LONG Asset 2</p>
+                                        <p class="text-sm text-slate-400">LONG ${this.state.asset2Name}</p>
                                         <p class="text-2xl font-bold text-green-400">$${(asset2Size * lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
                                     </div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-700">
+                                    <p class="text-sm text-slate-400">Capital utilisé</p>
+                                    <p class="text-lg font-semibold text-white">$${totalCap.toFixed(2)}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mt-8 bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4">Vérification Delta Neutral</h3>
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                ${Icons.AlertCircle()}
+                                Vérification Delta Neutral
+                            </h3>
                             <div class="grid md:grid-cols-3 gap-4 text-center">
-                                <div><p class="text-sm text-slate-400">Asset 1</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
-                                <div><p class="text-sm text-slate-400">Asset 2</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
-                                <div><p class="text-sm text-slate-400">Direction</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Hedgé</p></div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Exposition ${this.state.asset1Name}</p>
+                                    <p class="text-xl font-bold text-white">$0.00</p>
+                                    <p class="text-xs text-green-400">✓ Neutre</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Exposition ${this.state.asset2Name}</p>
+                                    <p class="text-xl font-bold text-white">$0.00</p>
+                                    <p class="text-xs text-green-400">✓ Neutre</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Exposition directionnelle</p>
+                                    <p class="text-xl font-bold text-white">$0.00</p>
+                                    <p class="text-xs text-green-400">✓ Hedgé</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-slate-600">
+                                <p class="text-sm text-slate-300"><strong>Ratio:</strong> $1 ${this.state.asset1Name} = $${beta.toFixed(3)} ${this.state.asset2Name}</p>
                             </div>
                         </div>
                     </div>
@@ -278,98 +378,68 @@
             }
 
             renderBeta() {
+                const cryptoOptions = Object.entries(CRYPTO_PAIRS).map(([id, data]) => 
+                    `<option value="${id}">${data.name}</option>`
+                ).join('');
+
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
-                        <div class="mb-6 flex gap-4">
-                            <button id="generate-sample" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">Générer Test</button>
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm text-slate-300">Période:</label>
-                                <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-20 bg-slate-700 text-white rounded px-3 py-1">
+                        
+                        <!-- Sélection de paires -->
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600 rounded-xl p-6 mb-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                ${Icons.Download()}
+                                Récupérer les Prix Automatiquement
+                            </h3>
+                            
+                            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Asset 1 (Référence)</label>
+                                    <select id="pair1-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                        ${cryptoOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Asset 2</label>
+                                    <select id="pair2-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                        ${cryptoOptions}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-300 mb-2">Période (jours)</label>
+                                    <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                                </div>
                             </div>
+
+                            <button id="fetch-data" ${this.state.loading ? 'disabled' : ''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                ${this.state.loading ? '⏳ Chargement...' : `${Icons.Download()} Récupérer les Prix`}
+                            </button>
+
+                            <p class="text-xs text-slate-400 mt-3 text-center">
+                                📡 Powered by CoinGecko API (gratuit, pas de clé requise)
+                            </p>
+                        </div>
+
+                        <!-- Ou générer des données test -->
+                        <div class="mb-6 flex gap-4 items-center">
+                            <button id="generate-sample" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg">
+                                🎲 Générer Données Test
+                            </button>
+                            <p class="text-sm text-slate-400">ou colle tes propres données ci-dessous</p>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div>
-                                <label class="block text-lg font-semibold text-white mb-3">Asset 1</label>
-                                <textarea id="asset1-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset1Data}</textarea>
-                                <p class="text-xs text-slate-400 mt-2">${this.state.asset1Data ? this.parsePriceData(this.state.asset1Data).length + ' prix' : 'En attente'}</p>
+                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                                    ${Icons.Upload()}
+                                    ${CRYPTO_PAIRS[this.state.selectedPair1].name} (Asset 1)
+                                </label>
+                                <textarea id="asset1-data" placeholder="Prix par ligne ou CSV" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset1Data}</textarea>
+                                <p class="text-xs text-slate-400 mt-2">${this.state.asset1Data ? this.parsePriceData(this.state.asset1Data).length + ' prix détectés' : 'En attente'}</p>
                             </div>
                             <div>
-                                <label class="block text-lg font-semibold text-white mb-3">Asset 2</label>
-                                <textarea id="asset2-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset2Data}</textarea>
-                                <p class="text-xs text-slate-400 mt-2">${this.state.asset2Data ? this.parsePriceData(this.state.asset2Data).length + ' prix' : 'En attente'}</p>
-                            </div>
-                        </div>
-
-                        <button id="calculate-beta" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg mb-6">Calculer Beta</button>
-
-                        ${this.state.betaResults ? `
-                            <button id="use-beta" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg mb-6">Utiliser ce Beta ${Icons.ArrowRight()}</button>
-                            <div class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-2 border-purple-500 rounded-xl p-6">
-                                <h2 class="text-2xl font-bold text-white mb-4">Résultats</h2>
-                                <div class="grid md:grid-cols-3 gap-6 text-center">
-                                    <div><p class="text-sm text-slate-300 mb-2">Beta</p><p class="text-4xl font-bold text-purple-400">${this.state.betaResults.beta.toFixed(3)}</p></div>
-                                    <div><p class="text-sm text-slate-300 mb-2">Corrélation</p><p class="text-4xl font-bold text-blue-400">${this.state.betaResults.correlation.toFixed(3)}</p></div>
-                                    <div><p class="text-sm text-slate-300 mb-2">R²</p><p class="text-4xl font-bold text-green-400">${(this.state.betaResults.rSquared * 100).toFixed(1)}%</p></div>
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
-            attachEvents() {
-                document.addEventListener('click', (e) => {
-                    if (e.target.id === 'tab-calculator') {
-                        this.state.activeTab = 'calculator';
-                        this.render();
-                    }
-                    if (e.target.id === 'tab-beta') {
-                        this.state.activeTab = 'beta';
-                        this.render();
-                    }
-                    if (e.target.id === 'generate-sample') {
-                        this.generateSampleData();
-                    }
-                    if (e.target.id === 'calculate-beta') {
-                        this.calculateMetrics();
-                    }
-                    if (e.target.id === 'use-beta') {
-                        this.useBeta();
-                    }
-                });
-
-                document.addEventListener('input', (e) => {
-                    if (e.target.id === 'capital') {
-                        this.state.capital = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'vol1') {
-                        this.state.asset1Vol = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'vol2') {
-                        this.state.asset2Vol = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'leverage') {
-                        this.state.leverage = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'period') {
-                        this.state.period = Number(e.target.value);
-                    }
-                    if (e.target.id === 'asset1-data') {
-                        this.state.asset1Data = e.target.value;
-                    }
-                    if (e.target.id === 'asset2-data') {
-                        this.state.asset2Data = e.target.value;
-                    }
-                });
-            }
-        }
-
-        new BetaHedgeCalculator();
-    </script>
-</body>
-</html>
+                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                                    ${Icons.Upload()}
+                                    ${CRYPTO_PAIRS[this.state.selectedPair2].name} (Asset 2)
+                                </label>
+                                <textarea id="
