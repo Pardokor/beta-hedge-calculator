@@ -62,7 +62,6 @@
                     asset1Name: 'ETH',
                     asset2Name: 'SOL'
                 };
-                
                 this.init();
             }
 
@@ -78,10 +77,8 @@
                     days: days.toString(),
                     interval: 'daily'
                 });
-
                 const response = await fetch(`${url}?${params}`);
                 if (!response.ok) throw new Error('Erreur API CoinGecko');
-                
                 const data = await response.json();
                 return data.prices.map(p => p[1]);
             }
@@ -89,25 +86,19 @@
             async fetchPairData() {
                 this.state.loading = true;
                 this.render();
-
                 try {
                     const coin1 = CRYPTO_PAIRS[this.state.selectedPair1];
                     const coin2 = CRYPTO_PAIRS[this.state.selectedPair2];
-                    
                     this.state.asset1Name = coin1.name;
                     this.state.asset2Name = coin2.name;
-
                     const [prices1, prices2] = await Promise.all([
                         this.fetchCryptoData(coin1.id, this.state.period),
                         this.fetchCryptoData(coin2.id, this.state.period)
                     ]);
-
                     this.state.asset1Data = prices1.map(p => p.toFixed(2)).join('\n');
                     this.state.asset2Data = prices2.map(p => p.toFixed(2)).join('\n');
-                    
                     this.state.loading = false;
                     this.render();
-                    
                     alert(`✅ ${prices1.length} prix récupérés pour ${coin1.name} et ${coin2.name}`);
                 } catch (error) {
                     this.state.loading = false;
@@ -236,7 +227,6 @@
                 const beta = this.state.useBetaFromCalc && this.state.betaResults 
                     ? this.state.betaResults.beta 
                     : (this.state.asset2Vol / this.state.asset1Vol);
-                
                 const totalCap = this.state.capital / 2;
                 const asset1Size = totalCap / (1 + beta);
                 const asset2Size = asset1Size * beta;
@@ -251,7 +241,6 @@
                                 </div>
                                 <p class="text-slate-300 mt-2">Calcule ton beta et optimise tes positions</p>
                             </div>
-
                             <div class="flex gap-2 mb-6">
                                 <button id="tab-calculator" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab === 'calculator' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}">
                                     ${Icons.Calculator()} Calculateur
@@ -260,7 +249,6 @@
                                     ${Icons.BarChart()} Beta
                                 </button>
                             </div>
-
                             ${this.state.activeTab === 'calculator' ? this.renderCalculator(beta, asset1Size, asset2Size, totalCap) : this.renderBeta()}
                         </div>
                     </div>
@@ -273,10 +261,9 @@
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
                         ${this.state.betaResults && this.state.useBetaFromCalc ? `
                             <div class="mb-6 bg-green-900/30 border border-green-600 rounded-lg p-4">
-                                <p class="text-green-300 font-semibold">✓ Beta calculé: ${this.state.betaResults.beta.toFixed(3)} | ${this.state.asset1Name}/${this.state.asset2Name} | R² = ${(this.state.betaResults.rSquared * 100).toFixed(1)}%</p>
+                                <p class="text-green-300 font-semibold">✓ Beta: ${this.state.betaResults.beta.toFixed(3)} | ${this.state.asset1Name}/${this.state.asset2Name} | R²=${(this.state.betaResults.rSquared*100).toFixed(1)}%</p>
                             </div>
                         ` : ''}
-
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div class="space-y-4">
                                 <div>
@@ -285,7 +272,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-300 mb-2">Vol ${this.state.asset1Name} (%)</label>
-                                    <input id="vol1" type="number" value="${this.state.asset1Vol.toFixed(2)}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
+                                    <input id="vol1" type="number" value="${this.state.asset1Vol.toFixed(2)}" ${this.state.useBetaFromCalc?'disabled':''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
                                 </div>
                             </div>
                             <div class="space-y-4">
@@ -295,28 +282,26 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-300 mb-2">Vol ${this.state.asset2Name} (%)</label>
-                                    <input id="vol2" type="number" value="${this.state.asset2Vol.toFixed(2)}" ${this.state.useBetaFromCalc ? 'disabled' : ''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
+                                    <input id="vol2" type="number" value="${this.state.asset2Vol.toFixed(2)}" ${this.state.useBetaFromCalc?'disabled':''} class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 disabled:opacity-50">
                                 </div>
                             </div>
                         </div>
-
                         <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-8">
                             <p class="text-blue-300 font-medium">Beta ${this.state.asset2Name}/${this.state.asset1Name}: ${beta.toFixed(3)}</p>
-                            <p class="text-sm text-slate-400 mt-1">${this.state.asset2Name} est ${beta > 1 ? (beta * 100 - 100).toFixed(0) + '% plus volatile' : (100 - beta * 100).toFixed(0) + '% moins volatile'} que ${this.state.asset1Name}</p>
+                            <p class="text-sm text-slate-400 mt-1">${this.state.asset2Name} est ${beta>1?(beta*100-100).toFixed(0)+'% plus volatile':(100-beta*100).toFixed(0)+'% moins volatile'} que ${this.state.asset1Name}</p>
                         </div>
-
                         <div class="grid md:grid-cols-2 gap-6">
                             <div class="bg-gradient-to-br from-green-900/20 to-slate-800/20 border border-green-700/50 rounded-xl p-6">
                                 <h2 class="text-xl font-bold text-green-400 mb-4">📈 Plateforme 1</h2>
                                 <div class="space-y-3">
                                     <div class="bg-slate-700/50 rounded-lg p-4">
                                         <p class="text-sm text-slate-400">LONG ${this.state.asset1Name}</p>
-                                        <p class="text-2xl font-bold text-green-400">$${(asset1Size * lev).toFixed(2)}</p>
+                                        <p class="text-2xl font-bold text-green-400">$${(asset1Size*lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
                                     </div>
                                     <div class="bg-slate-700/50 rounded-lg p-4">
                                         <p class="text-sm text-slate-400">SHORT ${this.state.asset2Name}</p>
-                                        <p class="text-2xl font-bold text-red-400">$${(asset2Size * lev).toFixed(2)}</p>
+                                        <p class="text-2xl font-bold text-red-400">$${(asset2Size*lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
                                     </div>
                                 </div>
@@ -325,18 +310,17 @@
                                     <p class="text-lg font-semibold text-white">$${totalCap.toFixed(2)}</p>
                                 </div>
                             </div>
-
                             <div class="bg-gradient-to-br from-red-900/20 to-slate-800/20 border border-red-700/50 rounded-xl p-6">
                                 <h2 class="text-xl font-bold text-red-400 mb-4">📉 Plateforme 2</h2>
                                 <div class="space-y-3">
                                     <div class="bg-slate-700/50 rounded-lg p-4">
                                         <p class="text-sm text-slate-400">SHORT ${this.state.asset1Name}</p>
-                                        <p class="text-2xl font-bold text-red-400">$${(asset1Size * lev).toFixed(2)}</p>
+                                        <p class="text-2xl font-bold text-red-400">$${(asset1Size*lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset1Size.toFixed(2)}</p>
                                     </div>
                                     <div class="bg-slate-700/50 rounded-lg p-4">
                                         <p class="text-sm text-slate-400">LONG ${this.state.asset2Name}</p>
-                                        <p class="text-2xl font-bold text-green-400">$${(asset2Size * lev).toFixed(2)}</p>
+                                        <p class="text-2xl font-bold text-green-400">$${(asset2Size*lev).toFixed(2)}</p>
                                         <p class="text-xs text-slate-500">Capital: $${asset2Size.toFixed(2)}</p>
                                     </div>
                                 </div>
@@ -346,28 +330,12 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="mt-8 bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                ${Icons.AlertCircle()}
-                                Vérification Delta Neutral
-                            </h3>
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">${Icons.AlertCircle()} Vérification Delta Neutral</h3>
                             <div class="grid md:grid-cols-3 gap-4 text-center">
-                                <div>
-                                    <p class="text-sm text-slate-400">Exposition ${this.state.asset1Name}</p>
-                                    <p class="text-xl font-bold text-white">$0.00</p>
-                                    <p class="text-xs text-green-400">✓ Neutre</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-400">Exposition ${this.state.asset2Name}</p>
-                                    <p class="text-xl font-bold text-white">$0.00</p>
-                                    <p class="text-xs text-green-400">✓ Neutre</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-slate-400">Exposition directionnelle</p>
-                                    <p class="text-xl font-bold text-white">$0.00</p>
-                                    <p class="text-xs text-green-400">✓ Hedgé</p>
-                                </div>
+                                <div><p class="text-sm text-slate-400">Exposition ${this.state.asset1Name}</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
+                                <div><p class="text-sm text-slate-400">Exposition ${this.state.asset2Name}</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Neutre</p></div>
+                                <div><p class="text-sm text-slate-400">Exposition directionnelle</p><p class="text-xl font-bold text-white">$0.00</p><p class="text-xs text-green-400">✓ Hedgé</p></div>
                             </div>
                             <div class="mt-4 pt-4 border-t border-slate-600">
                                 <p class="text-sm text-slate-300"><strong>Ratio:</strong> $1 ${this.state.asset1Name} = $${beta.toFixed(3)} ${this.state.asset2Name}</p>
@@ -384,172 +352,93 @@
 
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
-                        
-                        <!-- Sélection de paires -->
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600 rounded-xl p-6 mb-6">
-                            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                ${Icons.Download()}
-                                Récupérer les Prix Automatiquement
-                            </h3>
-                            
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">${Icons.Download()} Récupérer les Prix Automatiquement</h3>
                             <div class="grid md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-sm font-medium text-slate-300 mb-2">Asset 1 (Référence)</label>
-                                    <select id="pair1-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
-                                        ${cryptoOptions}
-                                    </select>
+                                    <select id="pair1-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">${cryptoOptions}</select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-300 mb-2">Asset 2</label>
-                                    <select id="pair2-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
-                                        ${cryptoOptions}
-                                    </select>
+                                    <select id="pair2-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">${cryptoOptions}</select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-slate-300 mb-2">Période (jours)</label>
                                     <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
                                 </div>
                             </div>
-
-                            <button id="fetch-data" ${this.state.loading ? 'disabled' : ''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                ${this.state.loading ? '⏳ Chargement...' : `${Icons.Download()} Récupérer les Prix`}
+                            <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer les Prix`}
                             </button>
-
-                            <p class="text-xs text-slate-400 mt-3 text-center">
-                                📡 Powered by CoinGecko API (gratuit, pas de clé requise)
-                            </p>
+                            <p class="text-xs text-slate-400 mt-3 text-center">📡 Powered by CoinGecko API</p>
                         </div>
-
-                        <!-- Ou générer des données test -->
                         <div class="mb-6 flex gap-4 items-center">
-                            <button id="generate-sample" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg">
-                                🎲 Générer Données Test
-                            </button>
+                            <button id="generate-sample" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg">🎲 Générer Données Test</button>
                             <p class="text-sm text-slate-400">ou colle tes propres données ci-dessous</p>
                         </div>
-
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
                             <div>
-                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                                    ${Icons.Upload()}
-                                    ${CRYPTO_PAIRS[this.state.selectedPair1].name} (Asset 1)
-                                </label>
-                                <textarea id="asset2-data" placeholder="Prix par ligne ou CSV" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset2Data}</textarea>
-                                <p class="text-xs text-slate-400 mt-2">${this.state.asset2Data ? this.parsePriceData(this.state.asset2Data).length + ' prix détectés' : 'En attente'}</p>
+                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">${Icons.Upload()} ${CRYPTO_PAIRS[this.state.selectedPair1].name} (Asset 1)</label>
+                                <textarea id="asset1-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset1Data}</textarea>
+                                <p class="text-xs text-slate-400 mt-2">${this.state.asset1Data?this.parsePriceData(this.state.asset1Data).length+' prix':'En attente'}</p>
+                            </div>
+                            <div>
+                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">${Icons.Upload()} ${CRYPTO_PAIRS[this.state.selectedPair2].name} (Asset 2)</label>
+                                <textarea id="asset2-data" placeholder="Prix par ligne" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset2Data}</textarea>
+                                <p class="text-xs text-slate-400 mt-2">${this.state.asset2Data?this.parsePriceData(this.state.asset2Data).length+' prix':'En attente'}</p>
                             </div>
                         </div>
-
-                        <button id="calculate-beta" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg mb-6 flex items-center justify-center gap-2">
-                            ${Icons.Calculator()}
-                            Calculer Beta
-                        </button>
-
-                        ${this.state.betaResults ? `
-                            <button id="use-beta" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg mb-6 flex items-center justify-center gap-2">
-                                Utiliser ce Beta dans le Calculateur
-                                ${Icons.ArrowRight()}
-                            </button>
-                            
+                        <button id="calculate-beta" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg mb-6 flex items-center justify-center gap-2">${Icons.Calculator()} Calculer Beta</button>
+                        ${this.state.betaResults?`
+                            <button id="use-beta" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg mb-6 flex items-center justify-center gap-2">Utiliser ce Beta ${Icons.ArrowRight()}</button>
                             <div class="space-y-6">
                                 <div class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-2 border-purple-500 rounded-xl p-6">
-                                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                                        ${Icons.TrendingUp()}
-                                        Résultats ${this.state.asset1Name}/${this.state.asset2Name}
-                                    </h2>
+                                    <h2 class="text-2xl font-bold text-white mb-4">${Icons.TrendingUp()} Résultats ${this.state.asset1Name}/${this.state.asset2Name}</h2>
                                     <div class="grid md:grid-cols-3 gap-6 text-center">
-                                        <div>
-                                            <p class="text-sm text-slate-300 mb-2">Beta</p>
-                                            <p class="text-4xl font-bold text-purple-400">${this.state.betaResults.beta.toFixed(3)}</p>
-                                            <p class="text-xs text-slate-400 mt-2">${this.state.betaResults.beta > 1 ? 'Plus volatile' : 'Moins volatile'}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-slate-300 mb-2">Corrélation</p>
-                                            <p class="text-4xl font-bold text-blue-400">${this.state.betaResults.correlation.toFixed(3)}</p>
-                                            <p class="text-xs text-slate-400 mt-2">${Math.abs(this.state.betaResults.correlation) > 0.7 ? 'Forte' : Math.abs(this.state.betaResults.correlation) > 0.4 ? 'Modérée' : 'Faible'}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-slate-300 mb-2">R² (Fiabilité)</p>
-                                            <p class="text-4xl font-bold text-green-400">${(this.state.betaResults.rSquared * 100).toFixed(1)}%</p>
-                                            <p class="text-xs text-slate-400 mt-2">${this.state.betaResults.rSquared > 0.5 ? 'Bon' : 'Faible'}</p>
-                                        </div>
+                                        <div><p class="text-sm text-slate-300 mb-2">Beta</p><p class="text-4xl font-bold text-purple-400">${this.state.betaResults.beta.toFixed(3)}</p></div>
+                                        <div><p class="text-sm text-slate-300 mb-2">Corrélation</p><p class="text-4xl font-bold text-blue-400">${this.state.betaResults.correlation.toFixed(3)}</p></div>
+                                        <div><p class="text-sm text-slate-300 mb-2">R²</p><p class="text-4xl font-bold text-green-400">${(this.state.betaResults.rSquared*100).toFixed(1)}%</p></div>
                                     </div>
                                 </div>
-
                                 <div class="grid md:grid-cols-2 gap-6">
                                     <div class="bg-slate-700/50 rounded-xl p-6 border border-blue-600">
-                                        <h3 class="text-xl font-bold text-blue-400 mb-4">${this.state.asset1Name} (Référence)</h3>
+                                        <h3 class="text-xl font-bold text-blue-400 mb-4">${this.state.asset1Name}</h3>
                                         <div class="space-y-3">
-                                            <div>
-                                                <p class="text-sm text-slate-400">Volatilité Annualisée</p>
-                                                <p class="text-3xl font-bold text-white">${this.state.betaResults.asset1.volatility.toFixed(2)}%</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-slate-400">Volatilité Journalière</p>
-                                                <p class="text-xl font-semibold text-slate-300">${this.state.betaResults.asset1.dailyVol.toFixed(2)}%</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-slate-400">Période analysée</p>
-                                                <p class="text-lg text-slate-300">${this.state.betaResults.asset1.prices} jours</p>
-                                            </div>
+                                            <div><p class="text-sm text-slate-400">Vol Annualisée</p><p class="text-3xl font-bold text-white">${this.state.betaResults.asset1.volatility.toFixed(2)}%</p></div>
+                                            <div><p class="text-sm text-slate-400">Vol Journalière</p><p class="text-xl font-semibold text-slate-300">${this.state.betaResults.asset1.dailyVol.toFixed(2)}%</p></div>
                                         </div>
                                     </div>
-
                                     <div class="bg-slate-700/50 rounded-xl p-6 border border-green-600">
                                         <h3 class="text-xl font-bold text-green-400 mb-4">${this.state.asset2Name}</h3>
                                         <div class="space-y-3">
-                                            <div>
-                                                <p class="text-sm text-slate-400">Volatilité Annualisée</p>
-                                                <p class="text-3xl font-bold text-white">${this.state.betaResults.asset2.volatility.toFixed(2)}%</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-slate-400">Volatilité Journalière</p>
-                                                <p class="text-xl font-semibold text-slate-300">${this.state.betaResults.asset2.dailyVol.toFixed(2)}%</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm text-slate-400">Période analysée</p>
-                                                <p class="text-lg text-slate-300">${this.state.betaResults.asset2.prices} jours</p>
-                                            </div>
+                                            <div><p class="text-sm text-slate-400">Vol Annualisée</p><p class="text-3xl font-bold text-white">${this.state.betaResults.asset2.volatility.toFixed(2)}%</p></div>
+                                            <div><p class="text-sm text-slate-400">Vol Journalière</p><p class="text-xl font-semibold text-slate-300">${this.state.betaResults.asset2.dailyVol.toFixed(2)}%</p></div>
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="bg-slate-700/30 border border-slate-600 rounded-xl p-6">
                                     <h3 class="text-lg font-bold text-white mb-3">💡 Interprétation</h3>
                                     <ul class="space-y-2 text-sm text-slate-300">
-                                        <li><strong>Beta ${this.state.betaResults.beta.toFixed(2)}:</strong> ${this.state.asset2Name} est ${this.state.betaResults.beta > 1 ? `${((this.state.betaResults.beta - 1) * 100).toFixed(0)}% plus volatile` : `${((1 - this.state.betaResults.beta) * 100).toFixed(0)}% moins volatile`} que ${this.state.asset1Name}</li>
-                                        <li><strong>R² ${(this.state.betaResults.rSquared * 100).toFixed(0)}%:</strong> ${this.state.betaResults.rSquared > 0.7 ? 'Excellente fiabilité - hedge très efficace' : this.state.betaResults.rSquared > 0.5 ? 'Bonne fiabilité - hedge efficace' : 'Fiabilité modérée - attention au basis risk'}</li>
-                                        <li><strong>Pour ton hedge:</strong> Utilise ${this.state.betaResults.beta.toFixed(3)}$ de ${this.state.asset2Name} pour chaque $1 de ${this.state.asset1Name}</li>
-                                        ${this.state.betaResults.rSquared < 0.5 ? '<li class="text-yellow-400">⚠️ R² faible : les actifs ne bougent pas toujours ensemble. Risque de basis risk élevé.</li>' : ''}
+                                        <li><strong>Beta ${this.state.betaResults.beta.toFixed(2)}:</strong> ${this.state.asset2Name} est ${this.state.betaResults.beta>1?`${((this.state.betaResults.beta-1)*100).toFixed(0)}% plus volatile`:`${((1-this.state.betaResults.beta)*100).toFixed(0)}% moins volatile`} que ${this.state.asset1Name}</li>
+                                        <li><strong>R² ${(this.state.betaResults.rSquared*100).toFixed(0)}%:</strong> ${this.state.betaResults.rSquared>0.7?'Excellente fiabilité':this.state.betaResults.rSquared>0.5?'Bonne fiabilité':'Fiabilité modérée'}</li>
+                                        <li><strong>Pour ton hedge:</strong> Utilise ${this.state.betaResults.beta.toFixed(3)} de ${this.state.asset2Name} pour chaque $1 de ${this.state.asset1Name}</li>
+                                        ${this.state.betaResults.rSquared<0.5?'<li class="text-yellow-400">⚠️ R² faible - attention au basis risk</li>':''}
                                     </ul>
                                 </div>
                             </div>
-                        ` : ''}
-
-                        <!-- Guide d'utilisation -->
+                        `:''}
                         <div class="mt-8 bg-blue-900/20 border border-blue-700 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">📖 Guide d'Utilisation</h3>
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">📖 Guide</h3>
                             <div class="space-y-2 text-sm text-slate-300">
-                                <p><strong>Méthode 1 - Automatique (Recommandé):</strong></p>
+                                <p><strong>Méthode Automatique:</strong></p>
                                 <ol class="list-decimal list-inside ml-4 space-y-1 text-slate-400">
-                                    <li>Choisis tes deux cryptos dans les menus déroulants</li>
+                                    <li>Choisis tes deux cryptos</li>
                                     <li>Définis la période (30-60 jours recommandé)</li>
-                                    <li>Clique sur "Récupérer les Prix"</li>
-                                    <li>Clique sur "Calculer Beta"</li>
+                                    <li>Clique "Récupérer les Prix"</li>
+                                    <li>Clique "Calculer Beta"</li>
                                 </ol>
-                                
-                                <p class="mt-3"><strong>Méthode 2 - Manuel:</strong></p>
-                                <ol class="list-decimal list-inside ml-4 space-y-1 text-slate-400">
-                                    <li>Récupère les prix depuis ton exchange ou API</li>
-                                    <li>Colle-les dans les zones de texte (un prix par ligne)</li>
-                                    <li>Clique sur "Calculer Beta"</li>
-                                </ol>
-
-                                <p class="mt-3"><strong>💡 Paires recommandées pour l'arbitrage:</strong></p>
-                                <ul class="list-disc list-inside ml-4 space-y-1 text-slate-400">
-                                    <li><strong>Forte corrélation:</strong> BTC/ETH, ARB/OP, MATIC/ARB</li>
-                                    <li><strong>Même secteur:</strong> Layer 1s ensemble, Layer 2s ensemble</li>
-                                    <li><strong>Liquidité élevée:</strong> ETH, BTC, SOL, BNB</li>
-                                </ul>
+                                <p class="mt-3"><strong>💡 Paires recommandées:</strong> BTC/ETH, ARB/OP, MATIC/ARB</p>
                             </div>
                         </div>
                     </div>
@@ -623,7 +512,6 @@
             }
         }
 
-        // Initialiser au select correct
         document.addEventListener('DOMContentLoaded', () => {
             const app = new BetaHedgeCalculator();
             setTimeout(() => {
@@ -637,12 +525,4 @@
         new BetaHedgeCalculator();
     </script>
 </body>
-</html>asset1-data" placeholder="Prix par ligne ou CSV" class="w-full h-64 bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600 font-mono text-sm">${this.state.asset1Data}</textarea>
-                                <p class="text-xs text-slate-400 mt-2">${this.state.asset1Data ? this.parsePriceData(this.state.asset1Data).length + ' prix détectés' : 'En attente'}</p>
-                            </div>
-                            <div>
-                                <label class="block text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                                    ${Icons.Upload()}
-                                    ${CRYPTO_PAIRS[this.state.selectedPair2].name} (Asset 2)
-                                </label>
-                                <textarea id="
+</html>
