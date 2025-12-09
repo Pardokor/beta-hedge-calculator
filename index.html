@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beta Hedge Trading Calculator</title>
+    <title>Beta Hedge Multi-Paires Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -14,12 +14,10 @@
             Calculator: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`,
             BarChart: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
             TrendingUp: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`,
-            Upload: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>`,
-            AlertCircle: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
-            ArrowRight: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`,
             Download: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>`,
             Plus: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>`,
-            X: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`
+            X: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+            AlertCircle: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
         };
 
         const CRYPTO_PAIRS = {
@@ -40,26 +38,22 @@
             'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
             'celestia': { name: 'TIA', id: 'celestia' },
             'sei-network': { name: 'SEI', id: 'sei-network' },
-            'near': { name: 'NEAR', id: 'near' },
-            'render-token': { name: 'RNDR', id: 'render-token' },
-            'the-graph': { name: 'GRT', id: 'the-graph' }
+            'near': { name: 'NEAR', id: 'near' }
         };
 
         class BetaHedgeCalculator {
             constructor() {
                 this.state = {
                     activeTab: 'calculator',
-                    pairs: [
-                        { id: 'ethereum', name: 'ETH', data: '', selected: 'ethereum' },
-                        { id: 'solana', name: 'SOL', data: '', selected: 'solana' }
+                    assets: [
+                        { id: 'ethereum', name: 'ETH', data: '', volatility: 0, selected: 'ethereum' },
+                        { id: 'solana', name: 'SOL', data: '', volatility: 0, selected: 'solana' }
                     ],
                     betaResults: null,
                     period: 30,
                     capital: 10000,
                     leverage: 1,
-                    useBetaFromCalc: false,
-                    loading: false,
-                    referenceAsset: 'ethereum'
+                    loading: false
                 };
                 this.init();
             }
@@ -69,26 +63,27 @@
                 this.attachEvents();
             }
 
-            addPair() {
-                if (this.state.pairs.length >= 10) {
-                    alert('Maximum 10 paires');
+            addAsset() {
+                if (this.state.assets.length >= 10) {
+                    alert('Maximum 10 assets');
                     return;
                 }
-                this.state.pairs.push({
-                    id: `pair_${Date.now()}`,
+                this.state.assets.push({
+                    id: `asset_${Date.now()}`,
                     name: 'BTC',
                     data: '',
+                    volatility: 0,
                     selected: 'bitcoin'
                 });
                 this.render();
             }
 
-            removePair(index) {
-                if (this.state.pairs.length <= 2) {
-                    alert('Minimum 2 paires requis');
+            removeAsset(index) {
+                if (this.state.assets.length <= 2) {
+                    alert('Minimum 2 assets requis');
                     return;
                 }
-                this.state.pairs.splice(index, 1);
+                this.state.assets.splice(index, 1);
                 this.render();
             }
 
@@ -100,28 +95,28 @@
                     interval: 'daily'
                 });
                 const response = await fetch(`${url}?${params}`);
-                if (!response.ok) throw new Error('Erreur API CoinGecko');
+                if (!response.ok) throw new Error('Erreur API');
                 const data = await response.json();
                 return data.prices.map(p => p[1]);
             }
 
-            async fetchAllPairs() {
+            async fetchAllAssets() {
                 this.state.loading = true;
                 this.render();
                 try {
-                    const promises = this.state.pairs.map(pair => 
-                        this.fetchCryptoData(CRYPTO_PAIRS[pair.selected].id, this.state.period)
+                    const promises = this.state.assets.map(asset => 
+                        this.fetchCryptoData(CRYPTO_PAIRS[asset.selected].id, this.state.period)
                     );
                     const results = await Promise.all(promises);
                     
-                    this.state.pairs.forEach((pair, i) => {
-                        pair.data = results[i].map(p => p.toFixed(4)).join('\n');
-                        pair.name = CRYPTO_PAIRS[pair.selected].name;
+                    this.state.assets.forEach((asset, i) => {
+                        asset.data = results[i].map(p => p.toFixed(4)).join('\n');
+                        asset.name = CRYPTO_PAIRS[asset.selected].name;
                     });
                     
                     this.state.loading = false;
                     this.render();
-                    alert(`✅ ${results[0].length} prix récupérés pour ${this.state.pairs.length} paires`);
+                    alert(`✅ ${results[0].length} prix récupérés pour ${this.state.assets.length} assets`);
                 } catch (error) {
                     this.state.loading = false;
                     this.render();
@@ -160,106 +155,50 @@
                 const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
                 const dailyVol = Math.sqrt(variance);
                 const annualizedVol = dailyVol * Math.sqrt(365) * 100;
-                return { dailyVol, annualizedVol };
+                return annualizedVol;
             }
 
-            calculateBeta(returns1, returns2) {
-                const n = Math.min(returns1.length, returns2.length);
-                const mean1 = returns1.slice(0, n).reduce((sum, r) => sum + r, 0) / n;
-                const mean2 = returns2.slice(0, n).reduce((sum, r) => sum + r, 0) / n;
-                let covariance = 0, variance1 = 0;
-                for (let i = 0; i < n; i++) {
-                    const diff1 = returns1[i] - mean1;
-                    const diff2 = returns2[i] - mean2;
-                    covariance += diff1 * diff2;
-                    variance1 += diff1 * diff1;
-                }
-                covariance /= n;
-                variance1 /= n;
-                const beta = covariance / variance1;
-                let variance2 = 0;
-                for (let i = 0; i < n; i++) {
-                    variance2 += Math.pow(returns2[i] - mean2, 2);
-                }
-                variance2 /= n;
-                const correlation = covariance / (Math.sqrt(variance1) * Math.sqrt(variance2));
-                const rSquared = correlation * correlation;
-                return { beta, rSquared, correlation };
-            }
-
-            calculateMultiPairMetrics() {
+            calculatePortfolio() {
                 try {
-                    const refIndex = this.state.pairs.findIndex(p => p.selected === this.state.referenceAsset);
-                    if (refIndex === -1) {
-                        alert('Asset de référence non trouvé');
-                        return;
-                    }
-
-                    const refPrices = this.parsePriceData(this.state.pairs[refIndex].data);
-                    if (refPrices.length < 2) {
-                        alert('Données insuffisantes pour asset de référence');
-                        return;
-                    }
-
-                    const refReturns = this.calculateReturns(refPrices);
-                    const refVol = this.calculateVolatility(refReturns);
-
-                    const results = [];
-                    let totalBeta = 0;
-                    let totalCorr = 0;
-
-                    for (let i = 0; i < this.state.pairs.length; i++) {
-                        if (i === refIndex) continue;
-
-                        const prices = this.parsePriceData(this.state.pairs[i].data);
-                        if (prices.length < 2 || prices.length !== refPrices.length) {
-                            alert(`Problème avec ${this.state.pairs[i].name}`);
+                    const assetData = [];
+                    
+                    // Parse et calcule la volatilité pour chaque asset
+                    for (let asset of this.state.assets) {
+                        const prices = this.parsePriceData(asset.data);
+                        if (prices.length < 2) {
+                            alert(`Données insuffisantes pour ${asset.name}`);
                             return;
                         }
-
                         const returns = this.calculateReturns(prices);
-                        const vol = this.calculateVolatility(returns);
-                        const betaStats = this.calculateBeta(refReturns, returns);
-
-                        results.push({
-                            name: this.state.pairs[i].name,
-                            volatility: vol.annualizedVol,
-                            dailyVol: vol.dailyVol * 100,
-                            beta: betaStats.beta,
-                            rSquared: betaStats.rSquared,
-                            correlation: betaStats.correlation
+                        const volatility = this.calculateVolatility(returns);
+                        
+                        assetData.push({
+                            name: asset.name,
+                            volatility: volatility,
+                            numPrices: prices.length
                         });
-
-                        totalBeta += betaStats.beta;
-                        totalCorr += Math.abs(betaStats.correlation);
                     }
 
-                    const avgBeta = totalBeta / results.length;
-                    const avgCorr = totalCorr / results.length;
+                    // Calcule la volatilité moyenne du portefeuille
+                    const avgVolatility = assetData.reduce((sum, a) => sum + a.volatility, 0) / assetData.length;
+                    
+                    // Calcule le poids normalisé de chaque asset (inversement proportionnel à la volatilité)
+                    const totalInverseVol = assetData.reduce((sum, a) => sum + (1 / a.volatility), 0);
+                    
+                    assetData.forEach(asset => {
+                        asset.weight = (1 / asset.volatility) / totalInverseVol;
+                    });
 
                     this.state.betaResults = {
-                        reference: {
-                            name: this.state.pairs[refIndex].name,
-                            volatility: refVol.annualizedVol,
-                            dailyVol: refVol.dailyVol * 100
-                        },
-                        pairs: results,
-                        avgBeta: avgBeta,
-                        avgCorrelation: avgCorr,
-                        diversificationScore: 1 - (avgCorr * 0.3)
+                        assets: assetData,
+                        avgVolatility: avgVolatility,
+                        numAssets: assetData.length
                     };
 
+                    this.state.activeTab = 'calculator';
                     this.render();
                 } catch (error) {
                     alert('Erreur: ' + error.message);
-                }
-            }
-
-            useBeta() {
-                if (this.state.betaResults) {
-                    this.state.activeTab = 'calculator';
-                    this.state.useBetaFromCalc = true;
-                    this.render();
                 }
             }
 
@@ -270,16 +209,16 @@
                             <div class="bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700 p-6 mb-6">
                                 <div class="flex items-center gap-3">
                                     ${Icons.Calculator()}
-                                    <h1 class="text-3xl font-bold text-white">Beta Hedge Multi-Paires</h1>
+                                    <h1 class="text-3xl font-bold text-white">Beta Hedge Multi-Assets Mirror</h1>
                                 </div>
-                                <p class="text-slate-300 mt-2">Diversifie ton risque avec plusieurs paires</p>
+                                <p class="text-slate-300 mt-2">Portfolio delta-neutral avec positions miroir sur 2 plateformes</p>
                             </div>
                             <div class="flex gap-2 mb-6">
                                 <button id="tab-calculator" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab==='calculator'?'bg-blue-600 text-white':'bg-slate-700 text-slate-300'}">
                                     ${Icons.Calculator()} Calculateur
                                 </button>
                                 <button id="tab-beta" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab==='beta'?'bg-purple-600 text-white':'bg-slate-700 text-slate-300'}">
-                                    ${Icons.BarChart()} Beta Multi-Paires
+                                    ${Icons.BarChart()} Configuration Assets
                                 </button>
                             </div>
                             ${this.state.activeTab==='calculator'?this.renderCalculator():this.renderBeta()}
@@ -292,23 +231,35 @@
                 if (!this.state.betaResults) {
                     return `
                         <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 text-center">
-                            <p class="text-slate-300 text-lg mb-4">Calcule d'abord ton beta multi-paires dans l'onglet "Beta Multi-Paires"</p>
+                            <p class="text-slate-300 text-lg mb-4">Configure d'abord tes assets dans l'onglet "Configuration Assets"</p>
                             <button id="go-to-beta" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold">
-                                Aller au calcul Beta ${Icons.ArrowRight()}
+                                Configurer les Assets
                             </button>
                         </div>
                     `;
                 }
 
-                const avgBeta = this.state.betaResults.avgBeta;
                 const totalCap = this.state.capital;
-                const numPairs = this.state.betaResults.pairs.length;
-                const capPerPair = totalCap / (numPairs + 1);
+                const numAssets = this.state.betaResults.numAssets;
+                const positions = [];
+
+                // Calcule les tailles de positions pondérées par volatilité inversée
+                this.state.betaResults.assets.forEach((asset, i) => {
+                    const size = totalCap * asset.weight / 2; // Divisé par 2 car miroir sur 2 plateformes
+                    positions.push({
+                        name: asset.name,
+                        size: size,
+                        volatility: asset.volatility,
+                        weight: asset.weight,
+                        direction1: i % 2 === 0 ? 'LONG' : 'SHORT',
+                        direction2: i % 2 === 0 ? 'SHORT' : 'LONG'
+                    });
+                });
 
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
                         <div class="mb-6 bg-green-900/30 border border-green-600 rounded-lg p-4">
-                            <p class="text-green-300 font-semibold">✓ Beta moyen: ${avgBeta.toFixed(4)} | ${numPairs} paires | Score diversification: ${(this.state.betaResults.diversificationScore*100).toFixed(1)}%</p>
+                            <p class="text-green-300 font-semibold">✓ Portfolio: ${numAssets} assets | Vol moyenne: ${this.state.betaResults.avgVolatility.toFixed(2)}%</p>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
@@ -323,44 +274,87 @@
                         </div>
 
                         <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-8">
-                            <h3 class="text-lg font-bold text-blue-300 mb-3">Répartition du Capital</h3>
-                            <p class="text-sm text-slate-300">Capital par paire: $${capPerPair.toFixed(2)}</p>
-                            <p class="text-xs text-slate-400 mt-2">Réparti équitablement sur ${numPairs+1} positions (1 réf + ${numPairs} hedges)</p>
+                            <h3 class="text-lg font-bold text-blue-300 mb-2">💡 Stratégie Mirror</h3>
+                            <p class="text-sm text-slate-300">Positions alternées LONG/SHORT sur Plateforme 1, inversées sur Plateforme 2</p>
+                            <p class="text-xs text-slate-400 mt-1">Tailles pondérées par volatilité inversée (assets moins volatils = positions plus grandes)</p>
                         </div>
 
-                        <div class="space-y-4">
-                            <h3 class="text-xl font-bold text-white">Positions Recommandées</h3>
-                            
-                            <div class="bg-gradient-to-r from-blue-900/30 to-slate-800/30 border border-blue-600 rounded-xl p-6">
-                                <h4 class="text-lg font-bold text-blue-400 mb-3">Asset de Référence: ${this.state.betaResults.reference.name}</h4>
-                                <p class="text-2xl font-bold text-white">LONG $${(capPerPair*this.state.leverage).toFixed(2)}</p>
-                                <p class="text-sm text-slate-400 mt-1">Capital: $${capPerPair.toFixed(2)}</p>
-                            </div>
-
-                            ${this.state.betaResults.pairs.map(pair => {
-                                const hedgeSize = capPerPair * pair.beta;
-                                return `
-                                    <div class="bg-gradient-to-r from-red-900/20 to-slate-800/20 border border-red-600/50 rounded-xl p-6">
-                                        <div class="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h4 class="text-lg font-bold text-red-400">${pair.name}</h4>
-                                                <p class="text-xs text-slate-400">Beta: ${pair.beta.toFixed(4)} | R²: ${(pair.rSquared*100).toFixed(1)}%</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-gradient-to-br from-green-900/20 to-slate-800/20 border border-green-700/50 rounded-xl p-6">
+                                <h2 class="text-2xl font-bold text-green-400 mb-4">📈 Plateforme 1</h2>
+                                <div class="space-y-3">
+                                    ${positions.map(pos => `
+                                        <div class="bg-slate-700/50 rounded-lg p-4">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-sm font-semibold ${pos.direction1==='LONG'?'text-green-400':'text-red-400'}">${pos.direction1} ${pos.name}</span>
+                                                <span class="text-xs text-slate-400">Vol: ${pos.volatility.toFixed(1)}%</span>
+                                            </div>
+                                            <p class="text-2xl font-bold text-white">$${(pos.size * this.state.leverage).toFixed(2)}</p>
+                                            <div class="flex justify-between mt-1">
+                                                <p class="text-xs text-slate-500">Capital: $${pos.size.toFixed(2)}</p>
+                                                <p class="text-xs text-slate-500">Poids: ${(pos.weight*100).toFixed(1)}%</p>
                                             </div>
                                         </div>
-                                        <p class="text-2xl font-bold text-red-400">SHORT $${(hedgeSize*this.state.leverage).toFixed(2)}</p>
-                                        <p class="text-sm text-slate-400 mt-1">Capital: $${hedgeSize.toFixed(2)}</p>
-                                    </div>
-                                `;
-                            }).join('')}
+                                    `).join('')}
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-700">
+                                    <p class="text-sm text-slate-400">Capital total</p>
+                                    <p class="text-lg font-semibold text-white">$${(totalCap/2).toFixed(2)}</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-red-900/20 to-slate-800/20 border border-red-700/50 rounded-xl p-6">
+                                <h2 class="text-2xl font-bold text-red-400 mb-4">📉 Plateforme 2</h2>
+                                <div class="space-y-3">
+                                    ${positions.map(pos => `
+                                        <div class="bg-slate-700/50 rounded-lg p-4">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <span class="text-sm font-semibold ${pos.direction2==='LONG'?'text-green-400':'text-red-400'}">${pos.direction2} ${pos.name}</span>
+                                                <span class="text-xs text-slate-400">Vol: ${pos.volatility.toFixed(1)}%</span>
+                                            </div>
+                                            <p class="text-2xl font-bold text-white">$${(pos.size * this.state.leverage).toFixed(2)}</p>
+                                            <div class="flex justify-between mt-1">
+                                                <p class="text-xs text-slate-500">Capital: $${pos.size.toFixed(2)}</p>
+                                                <p class="text-xs text-slate-500">Poids: ${(pos.weight*100).toFixed(1)}%</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-700">
+                                    <p class="text-sm text-slate-400">Capital total</p>
+                                    <p class="text-lg font-semibold text-white">$${(totalCap/2).toFixed(2)}</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-8 bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4">${Icons.AlertCircle()} Avantages Multi-Paires</h3>
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">${Icons.AlertCircle()} Vérification Delta Neutral</h3>
+                            <div class="space-y-3">
+                                ${positions.map(pos => `
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-slate-300">${pos.name}</span>
+                                        <div class="flex gap-4">
+                                            <span class="${pos.direction1==='LONG'?'text-green-400':'text-red-400'}">P1: ${pos.direction1}</span>
+                                            <span class="${pos.direction2==='LONG'?'text-green-400':'text-red-400'}">P2: ${pos.direction2}</span>
+                                            <span class="text-green-400 font-semibold">✓ Neutre</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-slate-600">
+                                <p class="text-sm text-slate-300"><strong>Total exposure:</strong> $0.00 (parfaitement hedgé)</p>
+                                <p class="text-xs text-slate-400 mt-2">Chaque position est inversée sur l'autre plateforme = delta neutral global</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 bg-yellow-900/20 border border-yellow-600 rounded-lg p-6">
+                            <h3 class="text-lg font-bold text-yellow-400 mb-3">💰 Comment ça marche</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>✓ <strong>Risque réduit:</strong> Diversification sur ${numPairs} paires différentes</li>
-                                <li>✓ <strong>Corrélation moyenne:</strong> ${(this.state.betaResults.avgCorrelation*100).toFixed(1)}% (plus bas = meilleur)</li>
-                                <li>✓ <strong>Protection:</strong> Si une paire décroche, les autres compensent</li>
-                                <li>✓ <strong>Delta neutral:</strong> Exposition directionnelle globalement neutre</li>
+                                <li>✓ <strong>Positions miroir:</strong> Chaque asset est LONG sur une plateforme et SHORT sur l'autre</li>
+                                <li>✓ <strong>Delta neutral:</strong> Aucune exposition directionnelle au marché</li>
+                                <li>✓ <strong>Profit:</strong> Différence de funding rates entre les deux plateformes</li>
+                                <li>✓ <strong>Pondération:</strong> Assets moins volatils = positions plus grandes (moins de risque)</li>
+                                <li>✓ <strong>Diversification:</strong> ${numAssets} assets réduisent le risque vs 1 seule paire</li>
                             </ul>
                         </div>
                     </div>
@@ -375,27 +369,24 @@
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
                         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600 rounded-xl p-6 mb-6">
-                            <h3 class="text-xl font-bold text-white mb-4">${Icons.Download()} Configuration des Paires</h3>
+                            <h3 class="text-xl font-bold text-white mb-4">${Icons.Download()} Configuration des Assets</h3>
                             
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Asset de Référence</label>
-                                <select id="reference-select" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
-                                    ${cryptoOptions}
-                                </select>
-                                <p class="text-xs text-slate-400 mt-1">L'asset que tu vas LONG (généralement le moins volatil)</p>
-                            </div>
-
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-slate-300 mb-2">Période (jours)</label>
                                 <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
                             </div>
 
-                            ${this.state.pairs.map((pair, i) => `
+                            ${this.state.assets.map((asset, i) => `
                                 <div class="mb-4 p-4 bg-slate-700/50 rounded-lg">
                                     <div class="flex items-center gap-3">
                                         <div class="flex-1">
-                                            <label class="block text-sm font-medium text-slate-300 mb-2">Paire ${i+1}</label>
-                                            <select id="pair-select-${i}" class="w-full bg-slate-600 text-white rounded-lg px-4 py-2 border border-slate-500">
+                                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                                Asset ${i+1} 
+                                                <span class="text-xs ${i%2===0?'text-green-400':'text-red-400'} ml-2">
+                                                    (P1: ${i%2===0?'LONG':'SHORT'} | P2: ${i%2===0?'SHORT':'LONG'})
+                                                </span>
+                                            </label>
+                                            <select id="asset-select-${i}" class="w-full bg-slate-600 text-white rounded-lg px-4 py-2 border border-slate-500">
                                                 ${cryptoOptions}
                                             </select>
                                         </div>
@@ -404,80 +395,33 @@
                                 </div>
                             `).join('')}
 
-                            <button id="add-pair" class="w-full bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
-                                ${Icons.Plus()} Ajouter une Paire
+                            <button id="add-asset" class="w-full bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
+                                ${Icons.Plus()} Ajouter un Asset
                             </button>
 
-                            <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg transition-all disabled:opacity-50">
-                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer toutes les Paires`}
+                            <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg mb-4 disabled:opacity-50">
+                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer tous les Assets`}
+                            </button>
+
+                            <button id="calculate" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">
+                                Calculer et Afficher les Positions
                             </button>
                         </div>
 
-                        <button id="calculate-beta" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg mb-6">${Icons.Calculator()} Calculer Beta Multi-Paires</button>
-
-                        ${this.state.betaResults?`
-                            <button id="use-beta" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg mb-6">Utiliser ces Betas ${Icons.ArrowRight()}</button>
-                            
-                            <div class="space-y-6">
-                                <div class="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-2 border-purple-500 rounded-xl p-6">
-                                    <h2 class="text-2xl font-bold text-white mb-4">${Icons.TrendingUp()} Résultats Multi-Paires</h2>
-                                    <div class="grid md:grid-cols-3 gap-6 text-center">
-                                        <div><p class="text-sm text-slate-300 mb-2">Beta Moyen</p><p class="text-4xl font-bold text-purple-400">${this.state.betaResults.avgBeta.toFixed(4)}</p></div>
-                                        <div><p class="text-sm text-slate-300 mb-2">Corrélation Moy</p><p class="text-4xl font-bold text-blue-400">${this.state.betaResults.avgCorrelation.toFixed(4)}</p></div>
-                                        <div><p class="text-sm text-slate-300 mb-2">Score Diversif</p><p class="text-4xl font-bold text-green-400">${(this.state.betaResults.diversificationScore*100).toFixed(1)}%</p></div>
-                                    </div>
-                                </div>
-
-                                <div class="bg-slate-700/50 rounded-xl p-6 border border-blue-600">
-                                    <h3 class="text-xl font-bold text-blue-400 mb-4">Référence: ${this.state.betaResults.reference.name}</h3>
-                                    <p class="text-sm text-slate-400">Volatilité: ${this.state.betaResults.reference.volatility.toFixed(2)}%</p>
-                                </div>
-
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-bold text-white">Détail par Paire</h3>
-                                    ${this.state.betaResults.pairs.map(pair => `
-                                        <div class="bg-slate-700/50 rounded-xl p-4 border border-slate-600">
-                                            <div class="flex justify-between items-start mb-2">
-                                                <h4 class="text-lg font-bold text-white">${pair.name}</h4>
-                                                <span class="text-sm ${pair.rSquared>0.7?'text-green-400':pair.rSquared>0.5?'text-yellow-400':'text-red-400'}">
-                                                    R²: ${(pair.rSquared*100).toFixed(1)}%
-                                                </span>
-                                            </div>
-                                            <div class="grid grid-cols-3 gap-4 text-sm">
-                                                <div><p class="text-slate-400">Beta</p><p class="font-bold text-white">${pair.beta.toFixed(4)}</p></div>
-                                                <div><p class="text-slate-400">Corrélation</p><p class="font-bold text-white">${pair.correlation.toFixed(4)}</p></div>
-                                                <div><p class="text-slate-400">Volatilité</p><p class="font-bold text-white">${pair.volatility.toFixed(2)}%</p></div>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-
-                                <div class="bg-slate-700/30 border border-slate-600 rounded-xl p-6">
-                                    <h3 class="text-lg font-bold text-white mb-3">💡 Interprétation</h3>
-                                    <ul class="space-y-2 text-sm text-slate-300">
-                                        <li><strong>Beta moyen ${this.state.betaResults.avgBeta.toFixed(4)}:</strong> Ratio de hedge global à appliquer</li>
-                                        <li><strong>Score diversification ${(this.state.betaResults.diversificationScore*100).toFixed(1)}%:</strong> ${this.state.betaResults.diversificationScore>0.8?'Excellente diversification':'Bonne diversification, mais corrélations moyennes/fortes'}</li>
-                                        <li><strong>Avantage:</strong> Le risque est réparti sur ${this.state.betaResults.pairs.length} paires au lieu d'une seule</li>
-                                        ${this.state.betaResults.pairs.some(p=>p.rSquared<0.5)?'<li class="text-yellow-400">⚠️ Certaines paires ont un R² faible - surveiller le basis risk</li>':''}
-                                    </ul>
-                                </div>
-                            </div>
-                        `:''}
-
-                        <div class="mt-8 bg-blue-900/20 border border-blue-700 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">📖 Stratégie Multi-Paires</h3>
+                        <div class="bg-blue-900/20 border border-blue-700 rounded-lg p-6">
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">📖 Concept</h3>
                             <div class="space-y-2 text-sm text-slate-300">
-                                <p><strong>Pourquoi utiliser plusieurs paires ?</strong></p>
+                                <p><strong>Position Mirror Strategy:</strong></p>
                                 <ul class="list-disc list-inside ml-4 space-y-1 text-slate-400">
-                                    <li>Réduit le risque si une paire décroche de sa corrélation</li>
-                                    <li>Diversifie les sources de funding rates</li>
-                                    <li>Protection contre les événements spécifiques à un token</li>
+                                    <li>Assets pairs: alternance automatique LONG/SHORT</li>
+                                    <li>Plateforme 2: positions inversées de Plateforme 1</li>
+                                    <li>Pondération: inversement proportionnelle à la volatilité</li>
+                                    <li>Résultat: 100% delta neutral + capture funding rates</li>
                                 </ul>
-                                <p class="mt-3"><strong>💡 Combinaisons recommandées:</strong></p>
+                                <p class="mt-3"><strong>Exemple avec 4 assets:</strong></p>
                                 <ul class="list-disc list-inside ml-4 space-y-1 text-slate-400">
-                                    <li><strong>Layer 2s:</strong> ETH + ARB/OP/MATIC (forte corrélation)</li>
-                                    <li><strong>Major Alts:</strong> BTC + ETH/SOL/BNB (corrélation modérée)</li>
-                                    <li><strong>Secteur DeFi:</strong> ETH + UNI/AAVE/LINK</li>
+                                    <li>P1: LONG ETH, SHORT SOL, LONG SUI, SHORT SEI</li>
+                                    <li>P2: SHORT ETH, LONG SOL, SHORT SUI, LONG SEI</li>
                                 </ul>
                             </div>
                         </div>
@@ -495,20 +439,17 @@
                         this.state.activeTab = 'beta';
                         this.render();
                     }
-                    if (e.target.id === 'add-pair') {
-                        this.addPair();
+                    if (e.target.id === 'add-asset') {
+                        this.addAsset();
                     }
                     if (e.target.dataset.remove !== undefined) {
-                        this.removePair(parseInt(e.target.dataset.remove));
+                        this.removeAsset(parseInt(e.target.dataset.remove));
                     }
                     if (e.target.id === 'fetch-data') {
-                        this.fetchAllPairs();
+                        this.fetchAllAssets();
                     }
-                    if (e.target.id === 'calculate-beta') {
-                        this.calculateMultiPairMetrics();
-                    }
-                    if (e.target.id === 'use-beta') {
-                        this.useBeta();
+                    if (e.target.id === 'calculate') {
+                        this.calculatePortfolio();
                     }
                     if (e.target.id === 'go-to-beta') {
                         this.state.activeTab = 'beta';
@@ -517,13 +458,9 @@
                 });
 
                 document.addEventListener('change', (e) => {
-                    if (e.target.id === 'reference-select') {
-                        this.state.referenceAsset = e.target.value;
-                    }
-                    if (e.target.id.startsWith('pair-select-')) {
+                    if (e.target.id.startsWith('asset-select-')) {
                         const index = parseInt(e.target.id.split('-')[2]);
-                        this.state.pairs[index].selected = e.target.value;
-                        this.state.pairs[index].name = CRYPTO_PAIRS[e.target.value].name;
+                        this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
                     }
                 });
 
@@ -546,12 +483,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const app = new BetaHedgeCalculator();
             setTimeout(() => {
-                const refSelect = document.getElementById('reference-select');
-                if (refSelect) refSelect.value = app.state.referenceAsset;
-                
-                app.state.pairs.forEach((pair, i) => {
-                    const select = document.getElementById(`pair-select-${i}`);
-                    if (select) select.value = pair.selected;
+                app.state.assets.forEach((asset, i) => {
+                    const select = document.getElementById(`asset-select-${i}`);
+                    if (select) select.value = asset.selected;
                 });
             }, 100);
         });
