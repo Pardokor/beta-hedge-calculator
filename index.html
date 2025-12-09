@@ -95,8 +95,8 @@
                         this.fetchCryptoData(coin1.id, this.state.period),
                         this.fetchCryptoData(coin2.id, this.state.period)
                     ]);
-                    this.state.asset1Data = prices1.map(p => p.toFixed(2)).join('\n');
-                    this.state.asset2Data = prices2.map(p => p.toFixed(2)).join('\n');
+                    this.state.asset1Data = prices1.map(p => p.toFixed(4)).join('\n');
+                    this.state.asset2Data = prices2.map(p => p.toFixed(4)).join('\n');
                     this.state.loading = false;
                     this.render();
                     alert(`✅ ${prices1.length} prix récupérés pour ${coin1.name} et ${coin2.name}`);
@@ -210,8 +210,8 @@
                     solPrice *= (1 + (Math.random() - 0.5) * 0.04);
                     solPrices.push(solPrice);
                 }
-                this.state.asset1Data = ethPrices.map(p => p.toFixed(2)).join('\n');
-                this.state.asset2Data = solPrices.map(p => p.toFixed(2)).join('\n');
+                this.state.asset1Data = ethPrices.map(p => p.toFixed(4)).join('\n');
+                this.state.asset2Data = solPrices.map(p => p.toFixed(4)).join('\n');
                 this.render();
             }
 
