@@ -21,105 +21,60 @@
         };
 
         const CRYPTO_PAIRS = {
-            'aave': { name: 'AAVE', id: 'aave' },
-            'cardano': { name: 'ADA', id: 'cardano' },
-            'aerodrome-finance': { name: 'AERO', id: 'aerodrome-finance' },
-            'ai16z': { name: 'AIXBT', id: 'ai16z' },
-            'algorand': { name: 'ALGO', id: 'algorand' },
-            'apex-token-2': { name: 'APEX', id: 'apex-token-2' },
-            'aptos': { name: 'APT', id: 'aptos' },
-            'arbitrum': { name: 'ARB', id: 'arbitrum' },
-            'astar': { name: 'ASTR', id: 'astar' },
-            'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
-            'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
-            'basic-attention-token': { name: 'BAT', id: 'basic-attention-token' },
-            'berachain-bera': { name: 'BERA', id: 'berachain-bera' },
-            'binancecoin': { name: 'BNB', id: 'binancecoin' },
-            'bonk': { name: 'BONK', id: 'bonk' },
             'bitcoin': { name: 'BTC', id: 'bitcoin' },
-            'pancakeswap-token': { name: 'CAKE', id: 'pancakeswap-token' },
-            'curve-dao-token': { name: 'CRV', id: 'curve-dao-token' },
-            'dash': { name: 'DASH', id: 'dash' },
-            'dogecoin': { name: 'DOGE', id: 'dogecoin' },
-            'dolomite': { name: 'DOLO', id: 'dolomite' },
-            'polkadot': { name: 'DOT', id: 'polkadot' },
-            'dydx-chain': { name: 'DYDX', id: 'dydx-chain' },
-            'eigenlayer': { name: 'EIGEN', id: 'eigenlayer' },
-            'eos': { name: 'EOS', id: 'eos' },
             'ethereum': { name: 'ETH', id: 'ethereum' },
-            'ether-fi': { name: 'ETHFI', id: 'ether-fi' },
-            'fartcoin': { name: 'FARTCOIN', id: 'fartcoin' },
-            'fetch-ai': { name: 'FET', id: 'fetch-ai' },
-            'forta': { name: 'FF', id: 'forta' },
-            'filecoin': { name: 'FIL', id: 'filecoin' },
-            'flow': { name: 'FLOW', id: 'flow' },
-            'fantom': { name: 'FTM', id: 'fantom' },
-            'gala': { name: 'GALA', id: 'gala' },
-            'grass': { name: 'GRASS', id: 'grass' },
-            'the-graph': { name: 'GRT', id: 'the-graph' },
-            'helium': { name: 'HNT', id: 'helium' },
-            'hyperliquid': { name: 'HYPE', id: 'hyperliquid' },
-            'internet-computer': { name: 'ICP', id: 'internet-computer' },
-            'immutable-x': { name: 'IMX', id: 'immutable-x' },
-            'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
-            'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
-            'kaito-ai': { name: 'KAITO', id: 'kaito-ai' },
+            'solana': { name: 'SOL', id: 'solana' },
+            'binancecoin': { name: 'BNB', id: 'binancecoin' },
+            'dogecoin': { name: 'DOGE', id: 'dogecoin' },
+            'cardano': { name: 'ADA', id: 'cardano' },
+            'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
+            'polkadot': { name: 'DOT', id: 'polkadot' },
             'chainlink': { name: 'LINK', id: 'chainlink' },
-            'litecoin': { name: 'LTC', id: 'litecoin' },
-            'decentraland': { name: 'MANA', id: 'decentraland' },
-            'maker': { name: 'MKR', id: 'maker' },
-            'mantle': { name: 'MNT', id: 'mantle' },
-            'monster': { name: 'MON', id: 'monster' },
-            'metis-token': { name: 'METIS', id: 'metis-token' },
-            'merlion': { name: 'MERL', id: 'merlion' },
-            'myx-finance': { name: 'MYX', id: 'myx-finance' },
-            'near': { name: 'NEAR', id: 'near' },
-            'mantra-dao': { name: 'OM', id: 'mantra-dao' },
-            'ondo-finance': { name: 'ONDO', id: 'ondo-finance' },
+            'uniswap': { name: 'UNI', id: 'uniswap' },
+            'arbitrum': { name: 'ARB', id: 'arbitrum' },
             'optimism': { name: 'OP', id: 'optimism' },
-            'ordinals': { name: 'ORDI', id: 'ordinals' },
-            'orderly-network': { name: 'ORDER', id: 'orderly-network' },
+            'sui': { name: 'SUI', id: 'sui' },
+            'aptos': { name: 'APT', id: 'aptos' },
+            'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
+            'celestia': { name: 'TIA', id: 'celestia' },
+            'sei-network': { name: 'SEI', id: 'sei-network' },
+            'near': { name: 'NEAR', id: 'near' },
+            'starknet': { name: 'STRK', id: 'starknet' },
+            'fantom': { name: 'FTM', id: 'fantom' },
+            'dogwifcoin': { name: 'WIF', id: 'dogwifcoin' },
+            'zcash': { name: 'ZEC', id: 'zcash' },
+            'the-open-network': { name: 'TON', id: 'the-open-network' },
+            'tron': { name: 'TRX', id: 'tron' },
+            'ripple': { name: 'XRP', id: 'ripple' },
+            'litecoin': { name: 'LTC', id: 'litecoin' },
+            'internet-computer': { name: 'ICP', id: 'internet-computer' },
+            'render-token': { name: 'RNDR', id: 'render-token' },
+            'immutable-x': { name: 'IMX', id: 'immutable-x' },
+            'the-graph': { name: 'GRT', id: 'the-graph' },
+            'aave': { name: 'AAVE', id: 'aave' },
+            'maker': { name: 'MKR', id: 'maker' },
+            'curve-dao-token': { name: 'CRV', id: 'curve-dao-token' },
+            'polygon': { name: 'POL', id: 'polygon-ecosystem-token' },
+            'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
+            'pepe': { name: 'PEPE', id: 'pepe' },
+            'bonk': { name: 'BONK', id: 'bonk' },
+            'wormhole': { name: 'W', id: 'wormhole' },
+            'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
+            'worldcoin-wld': { name: 'WLD', id: 'worldcoin-wld' },
+            'mantle': { name: 'MNT', id: 'mantle' },
             'osmosis': { name: 'OSMO', id: 'osmosis' },
             'pendle': { name: 'PENDLE', id: 'pendle' },
-            'pudgy-penguins': { name: 'PENGU', id: 'pudgy-penguins' },
-            'pepe': { name: 'PEPE', id: 'pepe' },
-            'plume-network': { name: 'PLUME', id: 'plume-network' },
-            'polygon': { name: 'POL', id: 'polygon-ecosystem-token' },
-            'popcat': { name: 'POPCAT', id: 'popcat' },
-            'pump': { name: 'PUMP', id: 'pump' },
+            'helium': { name: 'HNT', id: 'helium' },
             'pyth-network': { name: 'PYTH', id: 'pyth-network' },
-            'render-token': { name: 'RNDR', id: 'render-token' },
-            'thorchain': { name: 'RUNE', id: 'thorchain' },
-            'the-sandbox': { name: 'SAND', id: 'the-sandbox' },
-            'sei-network': { name: 'SEI', id: 'sei-network' },
-            'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
-            'synthetix-network-token': { name: 'SNX', id: 'synthetix-network-token' },
-            'solana': { name: 'SOL', id: 'solana' },
-            'starknet': { name: 'STRK', id: 'starknet' },
-            'sui': { name: 'SUI', id: 'sui' },
-            'syrup-finance': { name: 'SYRUP', id: 'syrup-finance' },
-            'bittensor': { name: 'TAO', id: 'bittensor' },
             'theta-token': { name: 'THETA', id: 'theta-token' },
-            'celestia': { name: 'TIA', id: 'celestia' },
-            'the-open-network': { name: 'TON', id: 'the-open-network' },
-            'official-trump': { name: 'TRUMP', id: 'official-trump' },
-            'tron': { name: 'TRX', id: 'tron' },
-            'uniswap': { name: 'UNI', id: 'uniswap' },
-            'usual': { name: 'USUAL', id: 'usual' },
-            'virtuals-protocol': { name: 'VIRTUAL', id: 'virtuals-protocol' },
-            'vvv-finance': { name: 'VVV', id: 'vvv-finance' },
-            'wormhole': { name: 'W', id: 'wormhole' },
-            'wallet': { name: 'WAL', id: 'wallet' },
-            'walrus': { name: 'WCT', id: 'walrus' },
-            'dogwifcoin': { name: 'WIF', id: 'dogwifcoin' },
-            'worldcoin-wld': { name: 'WLD', id: 'worldcoin-wld' },
-            'world-liberty-financial': { name: 'WLFI', id: 'world-liberty-financial' },
-            'stellar': { name: 'XLM', id: 'stellar' },
-            'monero': { name: 'XMR', id: 'monero' },
-            'ripple': { name: 'XRP', id: 'ripple' },
-            'zcash': { name: 'ZEC', id: 'zcash' },
-            'zora': { name: 'ZORA', id: 'zora' },
-            'layerzero': { name: 'ZRO', id: 'layerzero' }
+            'fetch-ai': { name: 'FET', id: 'fetch-ai' },
+            'eos': { name: 'EOS', id: 'eos' },
+            'algorand': { name: 'ALGO', id: 'algorand' },
+            'flow': { name: 'FLOW', id: 'flow' },
+            'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
+            'sand': { name: 'SAND', id: 'the-sandbox' },
+            'decentraland': { name: 'MANA', id: 'decentraland' },
+            'gala': { name: 'GALA', id: 'gala' }
         };
 
         class BetaHedgeCalculator {
@@ -185,10 +140,23 @@
                 this.state.loading = true;
                 this.render();
                 try {
-                    const promises = this.state.assets.map(asset => 
-                        this.fetchCryptoData(CRYPTO_PAIRS[asset.selected].id, this.state.period)
-                    );
-                    const results = await Promise.all(promises);
+                    const results = [];
+                    
+                    // Fetch avec délai pour éviter rate limiting
+                    for (let i = 0; i < this.state.assets.length; i++) {
+                        const asset = this.state.assets[i];
+                        try {
+                            const data = await this.fetchCryptoData(CRYPTO_PAIRS[asset.selected].id, this.state.period);
+                            results.push(data);
+                            
+                            // Délai de 1.5s entre chaque requête
+                            if (i < this.state.assets.length - 1) {
+                                await new Promise(resolve => setTimeout(resolve, 1500));
+                            }
+                        } catch (err) {
+                            throw new Error(`Erreur pour ${CRYPTO_PAIRS[asset.selected].name}: ${err.message}`);
+                        }
+                    }
                     
                     this.state.assets.forEach((asset, i) => {
                         asset.data = results[i].map(p => p.toFixed(4)).join('\n');
@@ -439,10 +407,9 @@
             }
 
             renderBeta() {
-                const cryptoOptions = Object.entries(CRYPTO_PAIRS)
-                    .sort((a, b) => a[1].name.localeCompare(b[1].name))
-                    .map(([id, data]) => `<option value="${id}">${data.name}</option>`)
-                    .join('');
+                const cryptoOptions = Object.entries(CRYPTO_PAIRS).map(([id, data]) => 
+                    `<option value="${id}">${data.name}</option>`
+                ).join('');
 
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
