@@ -13,7 +13,6 @@
         const Icons = {
             Calculator: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`,
             BarChart: () => `<svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>`,
-            TrendingUp: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`,
             Download: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>`,
             Plus: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>`,
             X: () => `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
@@ -31,7 +30,6 @@
             'arbitrum': { name: 'ARB', id: 'arbitrum' },
             'astar': { name: 'ASTR', id: 'astar' },
             'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
-            'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
             'basic-attention-token': { name: 'BAT', id: 'basic-attention-token' },
             'berachain-bera': { name: 'BERA', id: 'berachain-bera' },
             'binancecoin': { name: 'BNB', id: 'binancecoin' },
@@ -45,41 +43,33 @@
             'polkadot': { name: 'DOT', id: 'polkadot' },
             'dydx-chain': { name: 'DYDX', id: 'dydx-chain' },
             'eigenlayer': { name: 'EIGEN', id: 'eigenlayer' },
-            'eos': { name: 'EOS', id: 'eos' },
             'ethereum': { name: 'ETH', id: 'ethereum' },
             'ether-fi': { name: 'ETHFI', id: 'ether-fi' },
             'fartcoin': { name: 'FARTCOIN', id: 'fartcoin' },
             'fetch-ai': { name: 'FET', id: 'fetch-ai' },
             'forta': { name: 'FF', id: 'forta' },
             'filecoin': { name: 'FIL', id: 'filecoin' },
-            'flow': { name: 'FLOW', id: 'flow' },
             'fantom': { name: 'FTM', id: 'fantom' },
-            'gala': { name: 'GALA', id: 'gala' },
             'grass': { name: 'GRASS', id: 'grass' },
             'the-graph': { name: 'GRT', id: 'the-graph' },
-            'helium': { name: 'HNT', id: 'helium' },
             'hyperliquid': { name: 'HYPE', id: 'hyperliquid' },
-            'internet-computer': { name: 'ICP', id: 'internet-computer' },
-            'immutable-x': { name: 'IMX', id: 'immutable-x' },
             'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
             'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
             'kaito-ai': { name: 'KAITO', id: 'kaito-ai' },
             'chainlink': { name: 'LINK', id: 'chainlink' },
             'litecoin': { name: 'LTC', id: 'litecoin' },
-            'decentraland': { name: 'MANA', id: 'decentraland' },
             'maker': { name: 'MKR', id: 'maker' },
-            'mantle': { name: 'MNT', id: 'mantle' },
-            'monster': { name: 'MON', id: 'monster' },
-            'metis-token': { name: 'METIS', id: 'metis-token' },
-            'merlion': { name: 'MERL', id: 'merlion' },
-            'myx-finance': { name: 'MYX', id: 'myx-finance' },
+            'moo-deng': { name: 'MOODENG', id: 'moo-deng' },
             'near': { name: 'NEAR', id: 'near' },
+            'merlion': { name: 'MERL', id: 'merlion' },
+            'metis-token': { name: 'METIS', id: 'metis-token' },
+            'monster': { name: 'MON', id: 'monster' },
+            'myx-finance': { name: 'MYX', id: 'myx-finance' },
             'mantra-dao': { name: 'OM', id: 'mantra-dao' },
             'ondo-finance': { name: 'ONDO', id: 'ondo-finance' },
             'optimism': { name: 'OP', id: 'optimism' },
             'ordinals': { name: 'ORDI', id: 'ordinals' },
             'orderly-network': { name: 'ORDER', id: 'orderly-network' },
-            'osmosis': { name: 'OSMO', id: 'osmosis' },
             'pendle': { name: 'PENDLE', id: 'pendle' },
             'pudgy-penguins': { name: 'PENGU', id: 'pudgy-penguins' },
             'pepe': { name: 'PEPE', id: 'pepe' },
@@ -89,6 +79,7 @@
             'pump': { name: 'PUMP', id: 'pump' },
             'pyth-network': { name: 'PYTH', id: 'pyth-network' },
             'render-token': { name: 'RNDR', id: 'render-token' },
+            'resolv': { name: 'RESOLV', id: 'resolv' },
             'thorchain': { name: 'RUNE', id: 'thorchain' },
             'the-sandbox': { name: 'SAND', id: 'the-sandbox' },
             'sei-network': { name: 'SEI', id: 'sei-network' },
@@ -99,7 +90,6 @@
             'sui': { name: 'SUI', id: 'sui' },
             'syrup-finance': { name: 'SYRUP', id: 'syrup-finance' },
             'bittensor': { name: 'TAO', id: 'bittensor' },
-            'theta-token': { name: 'THETA', id: 'theta-token' },
             'celestia': { name: 'TIA', id: 'celestia' },
             'the-open-network': { name: 'TON', id: 'the-open-network' },
             'official-trump': { name: 'TRUMP', id: 'official-trump' },
@@ -117,7 +107,6 @@
             'stellar': { name: 'XLM', id: 'stellar' },
             'monero': { name: 'XMR', id: 'monero' },
             'ripple': { name: 'XRP', id: 'ripple' },
-            'zcash': { name: 'ZEC', id: 'zcash' },
             'zora': { name: 'ZORA', id: 'zora' },
             'layerzero': { name: 'ZRO', id: 'layerzero' }
         };
@@ -187,14 +176,12 @@
                 try {
                     const results = [];
                     
-                    // Fetch avec délai pour éviter rate limiting
                     for (let i = 0; i < this.state.assets.length; i++) {
                         const asset = this.state.assets[i];
                         try {
                             const data = await this.fetchCryptoData(CRYPTO_PAIRS[asset.selected].id, this.state.period);
                             results.push(data);
                             
-                            // Délai de 1.5s entre chaque requête
                             if (i < this.state.assets.length - 1) {
                                 await new Promise(resolve => setTimeout(resolve, 1500));
                             }
@@ -331,7 +318,6 @@
                 }
 
                 const totalCap = this.state.capital;
-                const numAssets = this.state.betaResults.numAssets;
                 const positions = [];
 
                 this.state.betaResults.assets.forEach((asset, i) => {
@@ -349,7 +335,7 @@
                 return `
                     <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
                         <div class="mb-6 bg-green-900/30 border border-green-600 rounded-lg p-4">
-                            <p class="text-green-300 font-semibold">✓ Portfolio: ${numAssets} assets | Vol moyenne: ${this.state.betaResults.avgVolatility.toFixed(2)}%</p>
+                            <p class="text-green-300 font-semibold">✓ Portfolio: ${this.state.betaResults.numAssets} assets | Vol moyenne: ${this.state.betaResults.avgVolatility.toFixed(2)}%</p>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6 mb-8">
@@ -361,12 +347,6 @@
                                 <label class="block text-sm font-medium text-slate-300 mb-2">Leverage</label>
                                 <input id="leverage" type="number" value="${this.state.leverage}" min="1" max="10" step="0.5" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
                             </div>
-                        </div>
-
-                        <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 mb-8">
-                            <h3 class="text-lg font-bold text-blue-300 mb-2">💡 Stratégie Mirror</h3>
-                            <p class="text-sm text-slate-300">Positions alternées LONG/SHORT sur Plateforme 1, inversées sur Plateforme 2</p>
-                            <p class="text-xs text-slate-400 mt-1">Tailles pondérées par volatilité inversée (assets moins volatils = positions plus grandes)</p>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6">
@@ -416,25 +396,115 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                `;
+            }
 
-                        <div class="mt-8 bg-slate-700/30 border border-slate-600 rounded-lg p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">${Icons.AlertCircle()} Vérification Delta Neutral</h3>
-                            <div class="space-y-3">
-                                ${positions.map(pos => `
-                                    <div class="flex justify-between items-center text-sm">
-                                        <span class="text-slate-300">${pos.name}</span>
-                                        <div class="flex gap-4">
-                                            <span class="${pos.direction1==='LONG'?'text-green-400':'text-red-400'}">P1: ${pos.direction1}</span>
-                                            <span class="${pos.direction2==='LONG'?'text-green-400':'text-red-400'}">P2: ${pos.direction2}</span>
-                                            <span class="text-green-400 font-semibold">✓ Neutre</span>
+            renderBeta() {
+                const cryptoOptions = Object.entries(CRYPTO_PAIRS)
+                    .sort((a, b) => a[1].name.localeCompare(b[1].name))
+                    .map(([id, data]) => `<option value="${id}">${data.name}</option>`)
+                    .join('');
+
+                return `
+                    <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
+                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600 rounded-xl p-6 mb-6">
+                            <h3 class="text-xl font-bold text-white mb-4">${Icons.Download()} Configuration des Assets</h3>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-slate-300 mb-2">Période (jours)</label>
+                                <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
+                            </div>
+
+                            ${this.state.assets.map((asset, i) => `
+                                <div class="mb-4 p-4 bg-slate-700/50 rounded-lg">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex-1">
+                                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                                Asset ${i+1} 
+                                                <span class="text-xs ${i%2===0?'text-green-400':'text-red-400'} ml-2">
+                                                    (P1: ${i%2===0?'LONG':'SHORT'} | P2: ${i%2===0?'SHORT':'LONG'})
+                                                </span>
+                                            </label>
+                                            <select id="asset-select-${i}" class="w-full bg-slate-600 text-white rounded-lg px-4 py-2 border border-slate-500">
+                                                ${cryptoOptions}
+                                            </select>
                                         </div>
+                                        ${i >= 2 ? `<button data-remove="${i}" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg">${Icons.X()}</button>` : ''}
                                     </div>
-                                `).join('')}
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-slate-600">
-                                <p class="text-sm text-slate-300"><strong>Total exposure:</strong> $0.00 (parfaitement hedgé)</p>
-                                <p class="text-xs text-slate-400 mt-2">Chaque position est inversée sur l'autre plateforme = delta neutral global</p>
-                            </div>
-                        </div>
+                                </div>
+                            `).join('')}
 
-                        <div class="mt-6 bg-yellow
+                            <button id="add-asset" class="w-full bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
+                                ${Icons.Plus()} Ajouter un Asset
+                            </button>
+
+                            <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg mb-4 disabled:opacity-50">
+                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer tous les Assets`}
+                            </button>
+
+                            <button id="calculate" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">
+                                Calculer et Afficher les Positions
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            attachEvents() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.id === 'tab-calculator') {
+                        this.state.activeTab = 'calculator';
+                        this.render();
+                    }
+                    if (e.target.id === 'tab-beta') {
+                        this.state.activeTab = 'beta';
+                        this.render();
+                        }
+                if (e.target.id === 'add-asset') {
+                    this.addAsset();
+                }
+                if (e.target.dataset.remove !== undefined) {
+                    this.removeAsset(parseInt(e.target.dataset.remove));
+                }
+                if (e.target.id === 'fetch-data') {
+                    this.fetchAllAssets();
+                }
+                if (e.target.id === 'calculate') {
+                    this.calculatePortfolio();
+                }
+                if (e.target.id === 'go-to-beta') {
+                    this.state.activeTab = 'beta';
+                    this.render();
+                }
+            });
+
+            document.addEventListener('change', (e) => {
+                if (e.target.id.startsWith('asset-select-')) {
+                    const index = parseInt(e.target.id.split('-')[2]);
+                    this.state.assets[index].selected = e.target.value;
+                    this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                if (e.target.id === 'capital') {
+                    this.state.capital = Number(e.target.value);
+                    this.render();
+                }
+                if (e.target.id === 'leverage') {
+                    this.state.leverage = Number(e.target.value);
+                    this.render();
+                }
+                if (e.target.id === 'period') {
+                    this.state.period = Number(e.target.value);
+                }
+            });
+        }
+    }
+
+    new BetaHedgeCalculator();
+ </script>
+</body>
+</html>
+```
