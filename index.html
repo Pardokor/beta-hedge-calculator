@@ -21,60 +21,105 @@
         };
 
         const CRYPTO_PAIRS = {
-            'bitcoin': { name: 'BTC', id: 'bitcoin' },
-            'ethereum': { name: 'ETH', id: 'ethereum' },
-            'solana': { name: 'SOL', id: 'solana' },
-            'binancecoin': { name: 'BNB', id: 'binancecoin' },
-            'dogecoin': { name: 'DOGE', id: 'dogecoin' },
-            'cardano': { name: 'ADA', id: 'cardano' },
-            'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
-            'polkadot': { name: 'DOT', id: 'polkadot' },
-            'chainlink': { name: 'LINK', id: 'chainlink' },
-            'uniswap': { name: 'UNI', id: 'uniswap' },
-            'arbitrum': { name: 'ARB', id: 'arbitrum' },
-            'optimism': { name: 'OP', id: 'optimism' },
-            'sui': { name: 'SUI', id: 'sui' },
-            'aptos': { name: 'APT', id: 'aptos' },
-            'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
-            'celestia': { name: 'TIA', id: 'celestia' },
-            'sei-network': { name: 'SEI', id: 'sei-network' },
-            'near': { name: 'NEAR', id: 'near' },
-            'starknet': { name: 'STRK', id: 'starknet' },
-            'fantom': { name: 'FTM', id: 'fantom' },
-            'dogwifcoin': { name: 'WIF', id: 'dogwifcoin' },
-            'zcash': { name: 'ZEC', id: 'zcash' },
-            'the-open-network': { name: 'TON', id: 'the-open-network' },
-            'tron': { name: 'TRX', id: 'tron' },
-            'ripple': { name: 'XRP', id: 'ripple' },
-            'litecoin': { name: 'LTC', id: 'litecoin' },
-            'internet-computer': { name: 'ICP', id: 'internet-computer' },
-            'render-token': { name: 'RNDR', id: 'render-token' },
-            'immutable-x': { name: 'IMX', id: 'immutable-x' },
-            'the-graph': { name: 'GRT', id: 'the-graph' },
             'aave': { name: 'AAVE', id: 'aave' },
-            'maker': { name: 'MKR', id: 'maker' },
-            'curve-dao-token': { name: 'CRV', id: 'curve-dao-token' },
-            'polygon': { name: 'POL', id: 'polygon-ecosystem-token' },
-            'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
-            'pepe': { name: 'PEPE', id: 'pepe' },
+            'cardano': { name: 'ADA', id: 'cardano' },
+            'aerodrome-finance': { name: 'AERO', id: 'aerodrome-finance' },
+            'ai16z': { name: 'AIXBT', id: 'ai16z' },
+            'algorand': { name: 'ALGO', id: 'algorand' },
+            'apex-token-2': { name: 'APEX', id: 'apex-token-2' },
+            'aptos': { name: 'APT', id: 'aptos' },
+            'arbitrum': { name: 'ARB', id: 'arbitrum' },
+            'astar': { name: 'ASTR', id: 'astar' },
+            'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
+            'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
+            'basic-attention-token': { name: 'BAT', id: 'basic-attention-token' },
+            'berachain-bera': { name: 'BERA', id: 'berachain-bera' },
+            'binancecoin': { name: 'BNB', id: 'binancecoin' },
             'bonk': { name: 'BONK', id: 'bonk' },
-            'wormhole': { name: 'W', id: 'wormhole' },
+            'bitcoin': { name: 'BTC', id: 'bitcoin' },
+            'pancakeswap-token': { name: 'CAKE', id: 'pancakeswap-token' },
+            'curve-dao-token': { name: 'CRV', id: 'curve-dao-token' },
+            'dash': { name: 'DASH', id: 'dash' },
+            'dogecoin': { name: 'DOGE', id: 'dogecoin' },
+            'dolomite': { name: 'DOLO', id: 'dolomite' },
+            'polkadot': { name: 'DOT', id: 'polkadot' },
+            'dydx-chain': { name: 'DYDX', id: 'dydx-chain' },
+            'eigenlayer': { name: 'EIGEN', id: 'eigenlayer' },
+            'eos': { name: 'EOS', id: 'eos' },
+            'ethereum': { name: 'ETH', id: 'ethereum' },
+            'ether-fi': { name: 'ETHFI', id: 'ether-fi' },
+            'fartcoin': { name: 'FARTCOIN', id: 'fartcoin' },
+            'fetch-ai': { name: 'FET', id: 'fetch-ai' },
+            'forta': { name: 'FF', id: 'forta' },
+            'filecoin': { name: 'FIL', id: 'filecoin' },
+            'flow': { name: 'FLOW', id: 'flow' },
+            'fantom': { name: 'FTM', id: 'fantom' },
+            'gala': { name: 'GALA', id: 'gala' },
+            'grass': { name: 'GRASS', id: 'grass' },
+            'the-graph': { name: 'GRT', id: 'the-graph' },
+            'helium': { name: 'HNT', id: 'helium' },
+            'hyperliquid': { name: 'HYPE', id: 'hyperliquid' },
+            'internet-computer': { name: 'ICP', id: 'internet-computer' },
+            'immutable-x': { name: 'IMX', id: 'immutable-x' },
+            'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
             'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
-            'worldcoin-wld': { name: 'WLD', id: 'worldcoin-wld' },
+            'kaito-ai': { name: 'KAITO', id: 'kaito-ai' },
+            'chainlink': { name: 'LINK', id: 'chainlink' },
+            'litecoin': { name: 'LTC', id: 'litecoin' },
+            'decentraland': { name: 'MANA', id: 'decentraland' },
+            'maker': { name: 'MKR', id: 'maker' },
             'mantle': { name: 'MNT', id: 'mantle' },
+            'monster': { name: 'MON', id: 'monster' },
+            'metis-token': { name: 'METIS', id: 'metis-token' },
+            'merlion': { name: 'MERL', id: 'merlion' },
+            'myx-finance': { name: 'MYX', id: 'myx-finance' },
+            'near': { name: 'NEAR', id: 'near' },
+            'mantra-dao': { name: 'OM', id: 'mantra-dao' },
+            'ondo-finance': { name: 'ONDO', id: 'ondo-finance' },
+            'optimism': { name: 'OP', id: 'optimism' },
+            'ordinals': { name: 'ORDI', id: 'ordinals' },
+            'orderly-network': { name: 'ORDER', id: 'orderly-network' },
             'osmosis': { name: 'OSMO', id: 'osmosis' },
             'pendle': { name: 'PENDLE', id: 'pendle' },
-            'helium': { name: 'HNT', id: 'helium' },
+            'pudgy-penguins': { name: 'PENGU', id: 'pudgy-penguins' },
+            'pepe': { name: 'PEPE', id: 'pepe' },
+            'plume-network': { name: 'PLUME', id: 'plume-network' },
+            'polygon': { name: 'POL', id: 'polygon-ecosystem-token' },
+            'popcat': { name: 'POPCAT', id: 'popcat' },
+            'pump': { name: 'PUMP', id: 'pump' },
             'pyth-network': { name: 'PYTH', id: 'pyth-network' },
+            'render-token': { name: 'RNDR', id: 'render-token' },
+            'thorchain': { name: 'RUNE', id: 'thorchain' },
+            'the-sandbox': { name: 'SAND', id: 'the-sandbox' },
+            'sei-network': { name: 'SEI', id: 'sei-network' },
+            'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
+            'synthetix-network-token': { name: 'SNX', id: 'synthetix-network-token' },
+            'solana': { name: 'SOL', id: 'solana' },
+            'starknet': { name: 'STRK', id: 'starknet' },
+            'sui': { name: 'SUI', id: 'sui' },
+            'syrup-finance': { name: 'SYRUP', id: 'syrup-finance' },
+            'bittensor': { name: 'TAO', id: 'bittensor' },
             'theta-token': { name: 'THETA', id: 'theta-token' },
-            'fetch-ai': { name: 'FET', id: 'fetch-ai' },
-            'eos': { name: 'EOS', id: 'eos' },
-            'algorand': { name: 'ALGO', id: 'algorand' },
-            'flow': { name: 'FLOW', id: 'flow' },
-            'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
-            'sand': { name: 'SAND', id: 'the-sandbox' },
-            'decentraland': { name: 'MANA', id: 'decentraland' },
-            'gala': { name: 'GALA', id: 'gala' }
+            'celestia': { name: 'TIA', id: 'celestia' },
+            'the-open-network': { name: 'TON', id: 'the-open-network' },
+            'official-trump': { name: 'TRUMP', id: 'official-trump' },
+            'tron': { name: 'TRX', id: 'tron' },
+            'uniswap': { name: 'UNI', id: 'uniswap' },
+            'usual': { name: 'USUAL', id: 'usual' },
+            'virtuals-protocol': { name: 'VIRTUAL', id: 'virtuals-protocol' },
+            'vvv-finance': { name: 'VVV', id: 'vvv-finance' },
+            'wormhole': { name: 'W', id: 'wormhole' },
+            'wallet': { name: 'WAL', id: 'wallet' },
+            'walrus': { name: 'WCT', id: 'walrus' },
+            'dogwifcoin': { name: 'WIF', id: 'dogwifcoin' },
+            'worldcoin-wld': { name: 'WLD', id: 'worldcoin-wld' },
+            'world-liberty-financial': { name: 'WLFI', id: 'world-liberty-financial' },
+            'stellar': { name: 'XLM', id: 'stellar' },
+            'monero': { name: 'XMR', id: 'monero' },
+            'ripple': { name: 'XRP', id: 'ripple' },
+            'zcash': { name: 'ZEC', id: 'zcash' },
+            'zora': { name: 'ZORA', id: 'zora' },
+            'layerzero': { name: 'ZRO', id: 'layerzero' }
         };
 
         class BetaHedgeCalculator {
@@ -392,151 +437,4 @@
                             </div>
                         </div>
 
-                        <div class="mt-6 bg-yellow-900/20 border border-yellow-600 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-yellow-400 mb-3">💰 Comment ça marche</h3>
-                            <ul class="space-y-2 text-sm text-slate-300">
-                                <li>✓ <strong>Positions miroir:</strong> Chaque asset est LONG sur une plateforme et SHORT sur l'autre</li>
-                                <li>✓ <strong>Delta neutral:</strong> Aucune exposition directionnelle au marché</li>
-                                <li>✓ <strong>Profit:</strong> Différence de funding rates entre les deux plateformes</li>
-                                <li>✓ <strong>Pondération:</strong> Assets moins volatils = positions plus grandes (moins de risque)</li>
-                                <li>✓ <strong>Diversification:</strong> ${numAssets} assets réduisent le risque vs 1 seule paire</li>
-                            </ul>
-                        </div>
-                    </div>
-                `;
-            }
-
-            renderBeta() {
-                const cryptoOptions = Object.entries(CRYPTO_PAIRS).map(([id, data]) => 
-                    `<option value="${id}">${data.name}</option>`
-                ).join('');
-
-                return `
-                    <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700">
-                        <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-600 rounded-xl p-6 mb-6">
-                            <h3 class="text-xl font-bold text-white mb-4">${Icons.Download()} Configuration des Assets</h3>
-                            
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Période (jours)</label>
-                                <input id="period" type="number" value="${this.state.period}" min="7" max="365" class="w-full bg-slate-700 text-white rounded-lg px-4 py-3 border border-slate-600">
-                            </div>
-
-                            ${this.state.assets.map((asset, i) => `
-                                <div class="mb-4 p-4 bg-slate-700/50 rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex-1">
-                                            <label class="block text-sm font-medium text-slate-300 mb-2">
-                                                Asset ${i+1} 
-                                                <span class="text-xs ${i%2===0?'text-green-400':'text-red-400'} ml-2">
-                                                    (P1: ${i%2===0?'LONG':'SHORT'} | P2: ${i%2===0?'SHORT':'LONG'})
-                                                </span>
-                                            </label>
-                                            <select id="asset-select-${i}" class="w-full bg-slate-600 text-white rounded-lg px-4 py-2 border border-slate-500">
-                                                ${cryptoOptions}
-                                            </select>
-                                        </div>
-                                        ${i >= 2 ? `<button data-remove="${i}" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg">${Icons.X()}</button>` : ''}
-                                    </div>
-                                </div>
-                            `).join('')}
-
-                            <button id="add-asset" class="w-full bg-slate-600 hover:bg-slate-700 text-white py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
-                                ${Icons.Plus()} Ajouter un Asset
-                            </button>
-
-                            <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg mb-4 disabled:opacity-50">
-                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer tous les Assets`}
-                            </button>
-
-                            <button id="calculate" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">
-                                Calculer et Afficher les Positions
-                            </button>
-                        </div>
-
-                        <div class="bg-blue-900/20 border border-blue-700 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">📖 Concept</h3>
-                            <div class="space-y-2 text-sm text-slate-300">
-                                <p><strong>Position Mirror Strategy:</strong></p>
-                                <ul class="list-disc list-inside ml-4 space-y-1 text-slate-400">
-                                    <li>Assets pairs: alternance automatique LONG/SHORT</li>
-                                    <li>Plateforme 2: positions inversées de Plateforme 1</li>
-                                    <li>Pondération: inversement proportionnelle à la volatilité</li>
-                                    <li>Résultat: 100% delta neutral + capture funding rates</li>
-                                </ul>
-                                <p class="mt-3"><strong>Exemple avec 4 assets:</strong></p>
-                                <ul class="list-disc list-inside ml-4 space-y-1 text-slate-400">
-                                    <li>P1: LONG ETH, SHORT SOL, LONG SUI, SHORT SEI</li>
-                                    <li>P2: SHORT ETH, LONG SOL, SHORT SUI, LONG SEI</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            attachEvents() {
-                document.addEventListener('click', (e) => {
-                    if (e.target.id === 'tab-calculator') {
-                        this.state.activeTab = 'calculator';
-                        this.render();
-                    }
-                    if (e.target.id === 'tab-beta') {
-                        this.state.activeTab = 'beta';
-                        this.render();
-                    }
-                    if (e.target.id === 'add-asset') {
-                        this.addAsset();
-                    }
-                    if (e.target.dataset.remove !== undefined) {
-                        this.removeAsset(parseInt(e.target.dataset.remove));
-                    }
-                    if (e.target.id === 'fetch-data') {
-                        this.fetchAllAssets();
-                    }
-                    if (e.target.id === 'calculate') {
-                        this.calculatePortfolio();
-                    }
-                    if (e.target.id === 'go-to-beta') {
-                        this.state.activeTab = 'beta';
-                        this.render();
-                    }
-                });
-
-                document.addEventListener('change', (e) => {
-                    if (e.target.id.startsWith('asset-select-')) {
-                        const index = parseInt(e.target.id.split('-')[2]);
-                        this.state.assets[index].selected = e.target.value;
-                        this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
-                    }
-                });
-
-                document.addEventListener('input', (e) => {
-                    if (e.target.id === 'capital') {
-                        this.state.capital = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'leverage') {
-                        this.state.leverage = Number(e.target.value);
-                        this.render();
-                    }
-                    if (e.target.id === 'period') {
-                        this.state.period = Number(e.target.value);
-                    }
-                });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = new BetaHedgeCalculator();
-            setTimeout(() => {
-                app.state.assets.forEach((asset, i) => {
-                    const select = document.getElementById(`asset-select-${i}`);
-                    if (select) select.value = asset.selected;
-                });
-            }, 100);
-        });
-
-        new BetaHedgeCalculator();
-    </script>
-</body>
-</html>
+                        <div class="mt-6 bg-yellow
