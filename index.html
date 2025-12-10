@@ -162,7 +162,6 @@
                 try {
                     const assetData = [];
                     
-                    // Parse et calcule la volatilité pour chaque asset
                     for (let i = 0; i < this.state.assets.length; i++) {
                         const asset = this.state.assets[i];
                         const prices = this.parsePriceData(asset.data);
@@ -174,16 +173,13 @@
                         const volatility = this.calculateVolatility(returns);
                         
                         assetData.push({
-                            name: CRYPTO_PAIRS[asset.selected].name, // Utilise le nom actuel
+                            name: CRYPTO_PAIRS[asset.selected].name,
                             volatility: volatility,
                             numPrices: prices.length
                         });
                     }
 
-                    // Calcule la volatilité moyenne du portefeuille
                     const avgVolatility = assetData.reduce((sum, a) => sum + a.volatility, 0) / assetData.length;
-                    
-                    // Calcule le poids normalisé de chaque asset (inversement proportionnel à la volatilité)
                     const totalInverseVol = assetData.reduce((sum, a) => sum + (1 / a.volatility), 0);
                     
                     assetData.forEach(asset => {
@@ -244,9 +240,8 @@
                 const numAssets = this.state.betaResults.numAssets;
                 const positions = [];
 
-                // Calcule les tailles de positions pondérées par volatilité inversée
                 this.state.betaResults.assets.forEach((asset, i) => {
-                    const size = totalCap * asset.weight / 2; // Divisé par 2 car miroir sur 2 plateformes
+                    const size = totalCap * asset.weight / 2;
                     positions.push({
                         name: asset.name,
                         size: size,
@@ -461,6 +456,7 @@
                 document.addEventListener('change', (e) => {
                     if (e.target.id.startsWith('asset-select-')) {
                         const index = parseInt(e.target.id.split('-')[2]);
+                        this.state.assets[index].selected = e.target.value;
                         this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
                     }
                 });
