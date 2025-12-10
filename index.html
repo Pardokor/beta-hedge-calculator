@@ -163,7 +163,8 @@
                     const assetData = [];
                     
                     // Parse et calcule la volatilité pour chaque asset
-                    for (let asset of this.state.assets) {
+                    for (let i = 0; i < this.state.assets.length; i++) {
+                        const asset = this.state.assets[i];
                         const prices = this.parsePriceData(asset.data);
                         if (prices.length < 2) {
                             alert(`Données insuffisantes pour ${asset.name}`);
@@ -173,7 +174,7 @@
                         const volatility = this.calculateVolatility(returns);
                         
                         assetData.push({
-                            name: asset.name,
+                            name: CRYPTO_PAIRS[asset.selected].name, // Utilise le nom actuel
                             volatility: volatility,
                             numPrices: prices.length
                         });
