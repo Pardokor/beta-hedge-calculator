@@ -26,9 +26,11 @@
             'ai16z': { name: 'AI16Z', id: 'ai16z' },
             'algorand': { name: 'ALGO', id: 'algorand' },
             'aptos': { name: 'APT', id: 'aptos' },
+            'apex-protocol': { name: 'APEX', id: 'apex-protocol' },
             'arbitrum': { name: 'ARB', id: 'arbitrum' },
             'astar': { name: 'ASTR', id: 'astar' },
             'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
+            'avant': { name: 'AVNT', id: 'avant' },
             'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
             'basic-attention-token': { name: 'BAT', id: 'basic-attention-token' },
             'berachain-bera': { name: 'BERA', id: 'berachain-bera' },
@@ -42,6 +44,7 @@
             'polkadot': { name: 'DOT', id: 'polkadot' },
             'dydx-chain': { name: 'DYDX', id: 'dydx-chain' },
             'eigenlayer': { name: 'EIGEN', id: 'eigenlayer' },
+            'ethena': { name: 'ENA', id: 'ethena' },
             'eos': { name: 'EOS', id: 'eos' },
             'ethereum': { name: 'ETH', id: 'ethereum' },
             'ether-fi': { name: 'ETHFI', id: 'ether-fi' },
@@ -51,6 +54,7 @@
             'flow': { name: 'FLOW', id: 'flow' },
             'fantom': { name: 'FTM', id: 'fantom' },
             'gala': { name: 'GALA', id: 'gala' },
+            'goatseus-maximus': { name: 'GOAT', id: 'goatseus-maximus' },
             'grass': { name: 'GRASS', id: 'grass' },
             'the-graph': { name: 'GRT', id: 'the-graph' },
             'helium': { name: 'HNT', id: 'helium' },
@@ -58,13 +62,18 @@
             'internet-computer': { name: 'ICP', id: 'internet-computer' },
             'immutable-x': { name: 'IMX', id: 'immutable-x' },
             'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
+            'story': { name: 'IP', id: 'story' },
             'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
+            'kaito': { name: 'KAITO', id: 'kaito' },
+            'lido-dao': { name: 'LDO', id: 'lido-dao' },
+            'linea': { name: 'LINEA', id: 'linea' },
             'chainlink': { name: 'LINK', id: 'chainlink' },
             'litecoin': { name: 'LTC', id: 'litecoin' },
             'decentraland': { name: 'MANA', id: 'decentraland' },
             'maker': { name: 'MKR', id: 'maker' },
             'mantle': { name: 'MNT', id: 'mantle' },
             'moo-deng': { name: 'MOODENG', id: 'moo-deng' },
+            'monster': { name: 'MON', id: 'monster' },
             'near': { name: 'NEAR', id: 'near' },
             'mantra-dao': { name: 'OM', id: 'mantra-dao' },
             'ondo-finance': { name: 'ONDO', id: 'ondo-finance' },
@@ -78,12 +87,15 @@
             'popcat': { name: 'POPCAT', id: 'popcat' },
             'pyth-network': { name: 'PYTH', id: 'pyth-network' },
             'render-token': { name: 'RNDR', id: 'render-token' },
+            'resolv': { name: 'RESOLV', id: 'resolv' },
             'thorchain': { name: 'RUNE', id: 'thorchain' },
+            'bitcoin-cash-sv': { name: 'S', id: 'bitcoin-cash-sv' },
             'the-sandbox': { name: 'SAND', id: 'the-sandbox' },
             'sei-network': { name: 'SEI', id: 'sei-network' },
             'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
             'synthetix-network-token': { name: 'SNX', id: 'synthetix-network-token' },
             'solana': { name: 'SOL', id: 'solana' },
+            'spx6900': { name: 'SPX', id: 'spx6900' },
             'starknet': { name: 'STRK', id: 'starknet' },
             'sui': { name: 'SUI', id: 'sui' },
             'bittensor': { name: 'TAO', id: 'bittensor' },
@@ -97,10 +109,13 @@
             'virtuals-protocol': { name: 'VIRTUAL', id: 'virtuals-protocol' },
             'dogwifcoin': { name: 'WIF', id: 'dogwifcoin' },
             'worldcoin-wld': { name: 'WLD', id: 'worldcoin-wld' },
+            'world-liberty-financial': { name: 'WLFI', id: 'world-liberty-financial' },
             'stellar': { name: 'XLM', id: 'stellar' },
             'monero': { name: 'XMR', id: 'monero' },
+            'xai-blockchain': { name: 'XPL', id: 'xai-blockchain' },
             'ripple': { name: 'XRP', id: 'ripple' },
             'zcash': { name: 'ZEC', id: 'zcash' },
+            'zora': { name: 'ZORA', id: 'zora' },
             'layerzero': { name: 'ZRO', id: 'layerzero' }
         };
 
@@ -203,7 +218,6 @@
                             asset.name = coinData.name;
                             successfulAssets.push(coinData.name);
                             
-                            // Délai entre les requêtes
                             if (i < this.state.assets.length - 1) {
                                 await new Promise(resolve => setTimeout(resolve, 1500));
                             }
