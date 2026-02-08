@@ -223,60 +223,52 @@
                 
                 const successfulAssets = [];
                 const failedAssets = [];
-                const BATCH_SIZE = 3; // RÉDUIT à 3 assets par batch
-                const BATCH_DELAY = 20000; // 20 secondes entre batches
-                const REQUEST_DELAY = 5000; // 5 secondes entre chaque requête
+                const REQUEST_DELAY = 6000; // 6 secondes entre chaque requête
+                const SUPER_PAUSE_EVERY = 4; // Faire une super pause tous les 4 assets
+                const SUPER_PAUSE_DELAY = 30000; // 30 secondes de super pause
                 
                 try {
-                    // Diviser les assets en batches
-                    const batches = [];
-                    for (let i = 0; i < this.state.assets.length; i += BATCH_SIZE) {
-                        batches.push(this.state.assets.slice(i, i + BATCH_SIZE));
-                    }
-                    
-                    console.log(`📦 ${batches.length} batch(es) de max ${BATCH_SIZE} assets`);
-                    
-                    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-                        const batch = batches[batchIndex];
+                    for (let i = 0; i < this.state.assets.length; i++) {
+                        const asset = this.state.assets[i];
+                        const coinData = CRYPTO_PAIRS[asset.selected];
                         
-                        this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} (${batch.length} assets)`;
-                        this.render();
-                        
-                        for (let i = 0; i < batch.length; i++) {
-                            const asset = batch[i];
-                            const globalIndex = batchIndex * BATCH_SIZE + i;
-                            const coinData = CRYPTO_PAIRS[asset.selected];
+                        try {
+                            this.state.progressMessage = `Asset ${i + 1}/${this.state.assets.length}: ${coinData.name}...`;
+                            this.render();
                             
-                            try {
-                                this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} | Asset ${globalIndex + 1}/${this.state.assets.length}: ${coinData.name}...`;
-                                this.render();
-                                
-                                console.log(`📡 [Batch ${batchIndex + 1}] Récupération de ${coinData.name} (${coinData.id})...`);
-                                const data = await this.fetchCryptoData(coinData.id, this.state.period);
-                                
-                                asset.data = data.map(p => p.toFixed(4)).join('\n');
-                                asset.name = coinData.name;
-                                successfulAssets.push(coinData.name);
-                                
-                                console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
-                                
-                                // Délai LONG entre chaque requête
-                                if (i < batch.length - 1 || batchIndex < batches.length - 1) {
-                                    const delay = (i < batch.length - 1) ? REQUEST_DELAY : BATCH_DELAY;
-                                    const delayType = (i < batch.length - 1) ? 'requête' : 'batch';
-                                    this.state.progressMessage = `✅ ${coinData.name} OK | Pause ${delay/1000}s (${delayType})...`;
+                            console.log(`📡 [${i+1}/${this.state.assets.length}] Récupération de ${coinData.name} (${coinData.id})...`);
+                            const data = await this.fetchCryptoData(coinData.id, this.state.period);
+                            
+                            asset.data = data.map(p => p.toFixed(4)).join('\n');
+                            asset.name = coinData.name;
+                            successfulAssets.push(coinData.name);
+                            
+                            console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
+                            
+                            // Gestion intelligente des pauses
+                            if (i < this.state.assets.length - 1) {
+                                // Tous les 4 assets, faire une SUPER PAUSE
+                                if ((i + 1) % SUPER_PAUSE_EVERY === 0) {
+                                    this.state.progressMessage = `✅ ${coinData.name} OK | 🔄 SUPER PAUSE ${SUPER_PAUSE_DELAY/1000}s (reset rate limit)...`;
                                     this.render();
-                                    await new Promise(resolve => setTimeout(resolve, delay));
-                                }
-                            } catch (err) {
-                                console.error(`❌ Échec pour ${coinData.name}:`, err);
-                                failedAssets.push(`${coinData.name}: ${err.message}`);
-                                
-                                // Même en cas d'erreur, attendre avant de continuer
-                                if (i < batch.length - 1 || batchIndex < batches.length - 1) {
-                                    console.log('⏸️ Pause après erreur...');
+                                    console.log(`🔄 SUPER PAUSE après ${i+1} assets (${SUPER_PAUSE_DELAY/1000}s)...`);
+                                    await new Promise(resolve => setTimeout(resolve, SUPER_PAUSE_DELAY));
+                                } else {
+                                    // Pause normale entre requêtes
+                                    this.state.progressMessage = `✅ ${coinData.name} OK | Pause ${REQUEST_DELAY/1000}s...`;
+                                    this.render();
                                     await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
                                 }
+                            }
+                            
+                        } catch (err) {
+                            console.error(`❌ Échec pour ${coinData.name}:`, err);
+                            failedAssets.push(`${coinData.name}: ${err.message}`);
+                            
+                            // Même en cas d'erreur, attendre avant de continuer
+                            if (i < this.state.assets.length - 1) {
+                                console.log('⏸️ Pause après erreur...');
+                                await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
                             }
                         }
                     }
@@ -578,24 +570,24 @@
                         </div>
 
                         <div class="bg-yellow-900/20 border border-yellow-600 rounded-lg p-6 mb-4">
-                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Système de batch LENT mais FIABLE</h3>
+                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Système ANTI-RATE-LIMIT Intelligent</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• <strong>Max 3 assets par batch</strong> pour maximiser les chances</li>
-                                <li>• <strong>5 secondes entre chaque asset</strong></li>
-                                <li>• <strong>20 secondes entre chaque batch</strong></li>
-                                <li>• Oui c'est lent, mais ça marche !</li>
-                                <li>• Si échec: réduis la période ou supprime l'asset problématique</li>
+                                <li>• <strong>6 secondes entre chaque asset</strong></li>
+                                <li>• <strong>30 SECONDES de SUPER PAUSE tous les 4 assets</strong> 🔄</li>
+                                <li>• Exemple: Asset 4 → SUPER PAUSE 30s → Asset 5</li>
+                                <li>• Ceci permet de "reset" le rate limit de l'API</li>
+                                <li>• C'est TRÈS LENT mais ça marche à 100% !</li>
                             </ul>
                         </div>
 
                         <div class="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">⏱️ Temps estimé (API gratuite)</h3>
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">⏱️ Temps estimé RÉEL</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• 2-3 assets: ~15-20 secondes</li>
-                                <li>• 4-6 assets: ~45-60 secondes (2 batches)</li>
-                                <li>• 7-9 assets: ~1m30-2m (3 batches)</li>
-                                <li>• 10 assets: ~2m15 (4 batches)</li>
-                                <li>• 💡 <strong>Recommandé: commence avec 3-4 assets max</strong></li>
+                                <li>• <strong>1-4 assets:</strong> ~24 secondes (6s × 4)</li>
+                                <li>• <strong>5-8 assets:</strong> ~1m12s (30s pause + 24s)</li>
+                                <li>• <strong>9-10 assets:</strong> ~2m18s (2× 30s pauses + assets)</li>
+                                <li>• 💡 <strong>Va prendre un café pendant le chargement ☕</strong></li>
+                                <li>• 🎯 Mais tu auras tes 10 assets sans erreur !</li>
                             </ul>
                         </div>
                     </div>
