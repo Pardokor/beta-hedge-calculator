@@ -131,7 +131,8 @@
                     period: 30,
                     capital: 10000,
                     leverage: 1,
-                    loading: false
+                    loading: false,
+                    progressMessage: ''
                 };
                 this.init();
             }
@@ -170,36 +171,54 @@
                 this.render();
             }
 
-            async fetchCryptoData(coinId, days) {
-                try {
-                    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`;
-                    const params = new URLSearchParams({
-                        vs_currency: 'usd',
-                        days: days.toString(),
-                        interval: 'daily'
-                    });
-                    const response = await fetch(`${url}?${params}`);
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`API error (${response.status}): ${errorText}`);
+            async fetchCryptoData(coinId, days, retries = 3) {
+                for (let attempt = 0; attempt < retries; attempt++) {
+                    try {
+                        const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`;
+                        const params = new URLSearchParams({
+                            vs_currency: 'usd',
+                            days: days.toString(),
+                            interval: 'daily'
+                        });
+                        const response = await fetch(`${url}?${params}`);
+                        
+                        // Si rate limited (429), attendre plus longtemps
+                        if (response.status === 429) {
+                            const waitTime = (attempt + 1) * 5000; // 5s, 10s, 15s
+                            console.log(`⏳ Rate limited. Attente ${waitTime/1000}s avant retry...`);
+                            this.state.progressMessage = `⏳ API limitée, attente ${waitTime/1000}s...`;
+                            this.render();
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
+                            continue;
+                        }
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`API error (${response.status}): ${errorText}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (!data.prices || data.prices.length === 0) {
+                            throw new Error('Aucune donnée de prix disponible');
+                        }
+                        
+                        return data.prices.map(p => p[1]);
+                    } catch (error) {
+                        if (attempt === retries - 1) {
+                            console.error(`❌ Erreur pour ${coinId} après ${retries} tentatives:`, error);
+                            throw error;
+                        }
+                        // Attendre avant de réessayer
+                        console.log(`⚠️ Tentative ${attempt + 1}/${retries} échouée, retry...`);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
-                    
-                    const data = await response.json();
-                    
-                    if (!data.prices || data.prices.length === 0) {
-                        throw new Error('Aucune donnée de prix disponible');
-                    }
-                    
-                    return data.prices.map(p => p[1]);
-                } catch (error) {
-                    console.error(`Erreur pour ${coinId}:`, error);
-                    throw error;
                 }
             }
 
             async fetchAllAssets() {
                 this.state.loading = true;
+                this.state.progressMessage = 'Démarrage...';
                 this.render();
                 
                 const successfulAssets = [];
@@ -211,37 +230,47 @@
                         const coinData = CRYPTO_PAIRS[asset.selected];
                         
                         try {
-                            console.log(`Récupération de ${coinData.name} (${coinData.id})...`);
+                            this.state.progressMessage = `Récupération ${i+1}/${this.state.assets.length}: ${coinData.name}...`;
+                            this.render();
+                            
+                            console.log(`📡 Récupération de ${coinData.name} (${coinData.id})...`);
                             const data = await this.fetchCryptoData(coinData.id, this.state.period);
                             
                             asset.data = data.map(p => p.toFixed(4)).join('\n');
                             asset.name = coinData.name;
                             successfulAssets.push(coinData.name);
                             
+                            console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
+                            
+                            // Délai entre requêtes PLUS LONG pour éviter rate limiting
                             if (i < this.state.assets.length - 1) {
-                                await new Promise(resolve => setTimeout(resolve, 1500));
+                                this.state.progressMessage = `✅ ${coinData.name} OK, pause 2.5s...`;
+                                this.render();
+                                await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 secondes
                             }
                         } catch (err) {
-                            console.error(`Échec pour ${coinData.name}:`, err);
+                            console.error(`❌ Échec pour ${coinData.name}:`, err);
                             failedAssets.push(`${coinData.name}: ${err.message}`);
                         }
                     }
                     
                     this.state.loading = false;
+                    this.state.progressMessage = '';
                     this.render();
                     
                     if (successfulAssets.length > 0) {
-                        let message = `✅ ${successfulAssets.length} assets récupérés avec succès`;
+                        let message = `✅ ${successfulAssets.length} assets récupérés avec succès:\n${successfulAssets.join(', ')}`;
                         if (failedAssets.length > 0) {
                             message += `\n\n⚠️ Échecs (${failedAssets.length}):\n${failedAssets.join('\n')}`;
                         }
                         alert(message);
                     } else {
-                        alert('❌ Aucun asset n\'a pu être récupéré. Vérifiez votre connexion ou réessayez plus tard.');
+                        alert('❌ Aucun asset n\'a pu être récupéré. Causes possibles:\n- Rate limiting API CoinGecko\n- Problème de connexion\n- IDs invalides\n\n💡 Essaie de réduire le nombre d\'assets ou attends quelques minutes.');
                     }
                     
                 } catch (error) {
                     this.state.loading = false;
+                    this.state.progressMessage = '';
                     this.render();
                     alert('❌ Erreur générale: ' + error.message);
                 }
@@ -289,7 +318,7 @@
                         const asset = this.state.assets[i];
                         const prices = this.parsePriceData(asset.data);
                         if (prices.length < 2) {
-                            alert(`Données insuffisantes pour ${asset.name}. Récupérez d'abord les données.`);
+                            alert(`Données insuffisantes pour ${asset.name}. Récupère d'abord les données.`);
                             return;
                         }
                         const returns = this.calculateReturns(prices);
@@ -333,6 +362,15 @@
                                 </div>
                                 <p class="text-slate-300 mt-2">Portfolio delta-neutral avec positions miroir sur 2 plateformes</p>
                             </div>
+                            ${this.state.loading ? `
+                                <div class="bg-blue-900/30 border border-blue-600 rounded-xl p-6 mb-6 text-center">
+                                    <div class="animate-pulse">
+                                        <div class="text-2xl mb-2">⏳</div>
+                                        <p class="text-blue-300 font-semibold">${this.state.progressMessage}</p>
+                                        <p class="text-sm text-slate-400 mt-2">Ne ferme pas cette page...</p>
+                                    </div>
+                                </div>
+                            ` : ''}
                             <div class="flex gap-2 mb-6">
                                 <button id="tab-calculator" class="flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${this.state.activeTab==='calculator'?'bg-blue-600 text-white':'bg-slate-700 text-slate-300'}">
                                     ${Icons.Calculator()} Calculateur
@@ -482,80 +520,91 @@
                             </button>
 
                             <button id="fetch-data" ${this.state.loading?'disabled':''} class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 rounded-lg mb-4 disabled:opacity-50">
-                            ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer tous les Assets`}
-                        </button>
+                                ${this.state.loading?'⏳ Chargement...':`${Icons.Download()} Récupérer tous les Assets`}
+                            </button>
 
-                        <button id="calculate" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">
-                            Calculer et Afficher les Positions
-                        </button>
-                    </div>
+                            <button id="calculate" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg">
+                                Calculer et Afficher les Positions
+                            </button>
+                        </div>
 
-                    <div class="bg-yellow-900/20 border border-yellow-600 rounded-lg p-6">
-                        <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Notes importantes</h3>
-                        <ul class="space-y-2 text-sm text-slate-300">
-                            <li>• Certaines cryptos récentes peuvent ne pas avoir 30 jours d'historique</li>
-                            <li>• L'API CoinGecko est gratuite mais limitée en requêtes</li>
-                            <li>• Un délai de 1.5s est appliqué entre chaque requête</li>
-                            <li>• Si un asset échoue, les autres continueront d'être récupérés</li>
-                        </ul>
+                        <div class="bg-yellow-900/20 border border-yellow-600 rounded-lg p-6 mb-4">
+                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Notes importantes</h3>
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li>• Certaines cryptos récentes peuvent ne pas avoir ${this.state.period} jours d'historique</li>
+                                <li>• L'API CoinGecko gratuite est limitée (10-30 req/min)</li>
+                                <li>• Un délai de 2.5s est appliqué entre chaque requête</li>
+                                <li>• Si un asset échoue, les autres continueront</li>
+                                <li>• Évite de récupérer trop d'assets d'un coup (max 5-6 recommandé)</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">💡 Tips anti-rate-limit</h3>
+                            <ul class="space-y-2 text-sm text-slate-300">
+                                <li>• Commence avec 2-3 assets pour tester</li>
+                                <li>• Attends 1-2 min entre chaque batch</li>
+                                <li>• Si erreur persistante, réduis la période (7-14 jours)</li>
+                                <li>• L'app gère automatiquement les retries (3 tentatives)</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
+
+            attachEvents() {
+                document.addEventListener('click', (e) => {
+                    if (e.target.id === 'tab-calculator') {
+                        this.state.activeTab = 'calculator';
+                        this.render();
+                    }
+                    if (e.target.id === 'tab-beta') {
+                        this.state.activeTab = 'beta';
+                        this.render();
+                    }
+                    if (e.target.id === 'add-asset') {
+                        this.addAsset();
+                    }
+                    if (e.target.dataset.remove !== undefined) {
+                        this.removeAsset(parseInt(e.target.dataset.remove));
+                    }
+                    if (e.target.id === 'fetch-data') {
+                        this.fetchAllAssets();
+                    }
+                    if (e.target.id === 'calculate') {
+                        this.calculatePortfolio();
+                    }
+                    if (e.target.id === 'go-to-beta') {
+                        this.state.activeTab = 'beta';
+                        this.render();
+                    }
+                });
+
+                document.addEventListener('change', (e) => {
+                    if (e.target.id.startsWith('asset-select-')) {
+                        const index = parseInt(e.target.id.split('-')[2]);
+                        this.state.assets[index].selected = e.target.value;
+                        this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
+                    }
+                });
+
+                document.addEventListener('input', (e) => {
+                    if (e.target.id === 'capital') {
+                        this.state.capital = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'leverage') {
+                        this.state.leverage = Number(e.target.value);
+                        this.render();
+                    }
+                    if (e.target.id === 'period') {
+                        this.state.period = Number(e.target.value);
+                    }
+                });
+            }
         }
 
-        attachEvents() {
-            document.addEventListener('click', (e) => {
-                if (e.target.id === 'tab-calculator') {
-                    this.state.activeTab = 'calculator';
-                    this.render();
-                }
-                if (e.target.id === 'tab-beta') {
-                    this.state.activeTab = 'beta';
-                    this.render();
-                }
-                if (e.target.id === 'add-asset') {
-                    this.addAsset();
-                }
-                if (e.target.dataset.remove !== undefined) {
-                    this.removeAsset(parseInt(e.target.dataset.remove));
-                }
-                if (e.target.id === 'fetch-data') {
-                    this.fetchAllAssets();
-                }
-                if (e.target.id === 'calculate') {
-                    this.calculatePortfolio();
-                }
-                if (e.target.id === 'go-to-beta') {
-                    this.state.activeTab = 'beta';
-                    this.render();
-                }
-            });
-
-            document.addEventListener('change', (e) => {
-                if (e.target.id.startsWith('asset-select-')) {
-                    const index = parseInt(e.target.id.split('-')[2]);
-                    this.state.assets[index].selected = e.target.value;
-                    this.state.assets[index].name = CRYPTO_PAIRS[e.target.value].name;
-                }
-            });
-
-            document.addEventListener('input', (e) => {
-                if (e.target.id === 'capital') {
-                    this.state.capital = Number(e.target.value);
-                    this.render();
-                }
-                if (e.target.id === 'leverage') {
-                    this.state.leverage = Number(e.target.value);
-                    this.render();
-                }
-                if (e.target.id === 'period') {
-                    this.state.period = Number(e.target.value);
-                }
-            });
-        }
-    }
-
-    new BetaHedgeCalculator();
-</script>
+        new BetaHedgeCalculator();
+    </script>
 </body>
 </html>
