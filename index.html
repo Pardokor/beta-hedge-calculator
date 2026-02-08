@@ -30,7 +30,7 @@
             'arbitrum': { name: 'ARB', id: 'arbitrum' },
             'astar': { name: 'ASTR', id: 'astar' },
             'avalanche-2': { name: 'AVAX', id: 'avalanche-2' },
-            'avant': { name: 'AVNT', id: 'avantis' },
+            'avantis': { name: 'AVNT', id: 'avantis' }, // Corrigé de 'avant'
             'axie-infinity': { name: 'AXS', id: 'axie-infinity' },
             'basic-attention-token': { name: 'BAT', id: 'basic-attention-token' },
             'berachain-bera': { name: 'BERA', id: 'berachain-bera' },
@@ -62,7 +62,7 @@
             'internet-computer': { name: 'ICP', id: 'internet-computer' },
             'immutable-x': { name: 'IMX', id: 'immutable-x' },
             'injective-protocol': { name: 'INJ', id: 'injective-protocol' },
-            'story': { name: 'IP', id: 'story-2' },
+            'story': { name: 'IP', id: 'story' }, // Corrigé de 'story-2'
             'jupiter-exchange-solana': { name: 'JUP', id: 'jupiter-exchange-solana' },
             'kaito': { name: 'KAITO', id: 'kaito' },
             'lido-dao': { name: 'LDO', id: 'lido-dao' },
@@ -89,7 +89,7 @@
             'render-token': { name: 'RNDR', id: 'render-token' },
             'resolv': { name: 'RESOLV', id: 'resolv' },
             'thorchain': { name: 'RUNE', id: 'thorchain' },
-            'bitcoin-cash-sv': { name: 'S', id: 'bitcoin-cash-sv' },
+            'bitcoin-cash-sv': { name: 'BSV', id: 'bitcoin-cash-sv' }, // Corrigé le nom de 'S' à 'BSV'
             'the-sandbox': { name: 'SAND', id: 'the-sandbox' },
             'sei-network': { name: 'SEI', id: 'sei-network' },
             'shiba-inu': { name: 'SHIB', id: 'shiba-inu' },
@@ -112,7 +112,7 @@
             'world-liberty-financial': { name: 'WLFI', id: 'world-liberty-financial' },
             'stellar': { name: 'XLM', id: 'stellar' },
             'monero': { name: 'XMR', id: 'monero' },
-            'xai-blockchain': { name: 'XPL', id: 'xai-blockchain' },
+            'xai-blockchain': { name: 'XAI', id: 'xai-blockchain' }, // Corrigé de XPL
             'ripple': { name: 'XRP', id: 'ripple' },
             'zcash': { name: 'ZEC', id: 'zcash' },
             'zora': { name: 'ZORA', id: 'zora' },
@@ -223,8 +223,9 @@
                 
                 const successfulAssets = [];
                 const failedAssets = [];
-                const BATCH_SIZE = 4; // Limite à 4 assets par batch
-                const BATCH_DELAY = 12000; // 12 secondes entre chaque batch
+                const BATCH_SIZE = 3; // RÉDUIT à 3 assets par batch
+                const BATCH_DELAY = 20000; // 20 secondes entre batches
+                const REQUEST_DELAY = 5000; // 5 secondes entre chaque requête
                 
                 try {
                     // Diviser les assets en batches
@@ -247,7 +248,7 @@
                             const coinData = CRYPTO_PAIRS[asset.selected];
                             
                             try {
-                                this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} | ${i+1}/${batch.length}: ${coinData.name}...`;
+                                this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} | Asset ${globalIndex + 1}/${this.state.assets.length}: ${coinData.name}...`;
                                 this.render();
                                 
                                 console.log(`📡 [Batch ${batchIndex + 1}] Récupération de ${coinData.name} (${coinData.id})...`);
@@ -259,24 +260,24 @@
                                 
                                 console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
                                 
-                                // Délai entre requêtes dans le même batch
-                                if (i < batch.length - 1) {
-                                    this.state.progressMessage = `✅ ${coinData.name} OK, pause 3s...`;
+                                // Délai LONG entre chaque requête
+                                if (i < batch.length - 1 || batchIndex < batches.length - 1) {
+                                    const delay = (i < batch.length - 1) ? REQUEST_DELAY : BATCH_DELAY;
+                                    const delayType = (i < batch.length - 1) ? 'requête' : 'batch';
+                                    this.state.progressMessage = `✅ ${coinData.name} OK | Pause ${delay/1000}s (${delayType})...`;
                                     this.render();
-                                    await new Promise(resolve => setTimeout(resolve, 3000));
+                                    await new Promise(resolve => setTimeout(resolve, delay));
                                 }
                             } catch (err) {
                                 console.error(`❌ Échec pour ${coinData.name}:`, err);
                                 failedAssets.push(`${coinData.name}: ${err.message}`);
+                                
+                                // Même en cas d'erreur, attendre avant de continuer
+                                if (i < batch.length - 1 || batchIndex < batches.length - 1) {
+                                    console.log('⏸️ Pause après erreur...');
+                                    await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
+                                }
                             }
-                        }
-                        
-                        // Pause LONGUE entre batches (sauf après le dernier)
-                        if (batchIndex < batches.length - 1) {
-                            this.state.progressMessage = `⏸️ Pause ${BATCH_DELAY/1000}s avant batch ${batchIndex + 2}/${batches.length}...`;
-                            this.render();
-                            console.log(`⏸️ Pause de ${BATCH_DELAY/1000}s entre batches...`);
-                            await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
                         }
                     }
                     
@@ -284,16 +285,37 @@
                     this.state.progressMessage = '';
                     this.render();
                     
+                    const totalAssets = this.state.assets.length;
+                    const successCount = successfulAssets.length;
+                    const failCount = failedAssets.length;
+                    
+                    let message = `📊 Résultats: ${successCount}/${totalAssets} assets récupérés\n\n`;
+                    
                     if (successfulAssets.length > 0) {
-                        let message = `✅ ${successfulAssets.length}/${this.state.assets.length} assets récupérés avec succès:\n${successfulAssets.join(', ')}`;
-                        if (failedAssets.length > 0) {
-                            message += `\n\n⚠️ Échecs (${failedAssets.length}):\n${failedAssets.join('\n')}`;
-                        }
-                        message += `\n\n⏱️ Temps total: ~${Math.ceil((successfulAssets.length * 3 + (batches.length - 1) * BATCH_DELAY/1000) / 60)} min`;
-                        alert(message);
-                    } else {
-                        alert('❌ Aucun asset n\'a pu être récupéré. Causes possibles:\n- Rate limiting API CoinGecko\n- Problème de connexion\n- IDs invalides\n\n💡 Vérifie ta connexion et réessaie.');
+                        message += `✅ Succès (${successCount}):\n${successfulAssets.join(', ')}\n`;
                     }
+                    
+                    if (failedAssets.length > 0) {
+                        message += `\n⚠️ Échecs (${failCount}):\n${failedAssets.map(f => f.split(':')[0]).join(', ')}\n`;
+                        message += `\n💡 Pour les échecs:\n`;
+                        message += `- Certains assets récents n'ont pas ${this.state.period}j d'historique\n`;
+                        message += `- Essaie de réduire la période à 7-14 jours\n`;
+                        message += `- Ou supprime ces assets et relance`;
+                    }
+                    
+                    if (successCount === 0) {
+                        message = '❌ Aucun asset récupéré !\n\n';
+                        message += 'Causes possibles:\n';
+                        message += '- API CoinGecko temporairement indisponible\n';
+                        message += '- Problème de connexion internet\n';
+                        message += '- Rate limit trop strict\n\n';
+                        message += '💡 Essaie:\n';
+                        message += '- D\'attendre 5-10 minutes\n';
+                        message += '- De réduire à 2-3 assets\n';
+                        message += '- De réduire la période à 7 jours';
+                    }
+                    
+                    alert(message);
                     
                 } catch (error) {
                     this.state.loading = false;
@@ -556,23 +578,24 @@
                         </div>
 
                         <div class="bg-yellow-900/20 border border-yellow-600 rounded-lg p-6 mb-4">
-                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Système de batch automatique</h3>
+                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Système de batch LENT mais FIABLE</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• <strong>Max 4 assets par batch</strong> pour respecter l'API gratuite</li>
-                                <li>• <strong>Pause de 12s entre chaque batch</strong> de 4 assets</li>
-                                <li>• Tu peux ajouter jusqu'à 10 assets, mais ça prendra plus de temps</li>
-                                <li>• Exemple: 8 assets = 2 batches = ~30 secondes total</li>
-                                <li>• Si un asset échoue, les autres continueront</li>
+                                <li>• <strong>Max 3 assets par batch</strong> pour maximiser les chances</li>
+                                <li>• <strong>5 secondes entre chaque asset</strong></li>
+                                <li>• <strong>20 secondes entre chaque batch</strong></li>
+                                <li>• Oui c'est lent, mais ça marche !</li>
+                                <li>• Si échec: réduis la période ou supprime l'asset problématique</li>
                             </ul>
                         </div>
 
                         <div class="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">⏱️ Temps estimé</h3>
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">⏱️ Temps estimé (API gratuite)</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• 1-4 assets: ~12-15 secondes</li>
-                                <li>• 5-8 assets: ~30-35 secondes (2 batches)</li>
-                                <li>• 9-10 assets: ~50-55 secondes (3 batches)</li>
-                                <li>• Le système gère tout automatiquement !</li>
+                                <li>• 2-3 assets: ~15-20 secondes</li>
+                                <li>• 4-6 assets: ~45-60 secondes (2 batches)</li>
+                                <li>• 7-9 assets: ~1m30-2m (3 batches)</li>
+                                <li>• 10 assets: ~2m15 (4 batches)</li>
+                                <li>• 💡 <strong>Recommandé: commence avec 3-4 assets max</strong></li>
                             </ul>
                         </div>
                     </div>
