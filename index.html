@@ -223,34 +223,60 @@
                 
                 const successfulAssets = [];
                 const failedAssets = [];
+                const BATCH_SIZE = 4; // Limite à 4 assets par batch
+                const BATCH_DELAY = 12000; // 12 secondes entre chaque batch
                 
                 try {
-                    for (let i = 0; i < this.state.assets.length; i++) {
-                        const asset = this.state.assets[i];
-                        const coinData = CRYPTO_PAIRS[asset.selected];
+                    // Diviser les assets en batches
+                    const batches = [];
+                    for (let i = 0; i < this.state.assets.length; i += BATCH_SIZE) {
+                        batches.push(this.state.assets.slice(i, i + BATCH_SIZE));
+                    }
+                    
+                    console.log(`📦 ${batches.length} batch(es) de max ${BATCH_SIZE} assets`);
+                    
+                    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+                        const batch = batches[batchIndex];
                         
-                        try {
-                            this.state.progressMessage = `Récupération ${i+1}/${this.state.assets.length}: ${coinData.name}...`;
-                            this.render();
+                        this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} (${batch.length} assets)`;
+                        this.render();
+                        
+                        for (let i = 0; i < batch.length; i++) {
+                            const asset = batch[i];
+                            const globalIndex = batchIndex * BATCH_SIZE + i;
+                            const coinData = CRYPTO_PAIRS[asset.selected];
                             
-                            console.log(`📡 Récupération de ${coinData.name} (${coinData.id})...`);
-                            const data = await this.fetchCryptoData(coinData.id, this.state.period);
-                            
-                            asset.data = data.map(p => p.toFixed(4)).join('\n');
-                            asset.name = coinData.name;
-                            successfulAssets.push(coinData.name);
-                            
-                            console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
-                            
-                            // Délai entre requêtes PLUS LONG pour éviter rate limiting
-                            if (i < this.state.assets.length - 1) {
-                                this.state.progressMessage = `✅ ${coinData.name} OK, pause 2.5s...`;
+                            try {
+                                this.state.progressMessage = `📦 Batch ${batchIndex + 1}/${batches.length} | ${i+1}/${batch.length}: ${coinData.name}...`;
                                 this.render();
-                                await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 secondes
+                                
+                                console.log(`📡 [Batch ${batchIndex + 1}] Récupération de ${coinData.name} (${coinData.id})...`);
+                                const data = await this.fetchCryptoData(coinData.id, this.state.period);
+                                
+                                asset.data = data.map(p => p.toFixed(4)).join('\n');
+                                asset.name = coinData.name;
+                                successfulAssets.push(coinData.name);
+                                
+                                console.log(`✅ ${coinData.name} OK (${data.length} prix)`);
+                                
+                                // Délai entre requêtes dans le même batch
+                                if (i < batch.length - 1) {
+                                    this.state.progressMessage = `✅ ${coinData.name} OK, pause 3s...`;
+                                    this.render();
+                                    await new Promise(resolve => setTimeout(resolve, 3000));
+                                }
+                            } catch (err) {
+                                console.error(`❌ Échec pour ${coinData.name}:`, err);
+                                failedAssets.push(`${coinData.name}: ${err.message}`);
                             }
-                        } catch (err) {
-                            console.error(`❌ Échec pour ${coinData.name}:`, err);
-                            failedAssets.push(`${coinData.name}: ${err.message}`);
+                        }
+                        
+                        // Pause LONGUE entre batches (sauf après le dernier)
+                        if (batchIndex < batches.length - 1) {
+                            this.state.progressMessage = `⏸️ Pause ${BATCH_DELAY/1000}s avant batch ${batchIndex + 2}/${batches.length}...`;
+                            this.render();
+                            console.log(`⏸️ Pause de ${BATCH_DELAY/1000}s entre batches...`);
+                            await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
                         }
                     }
                     
@@ -259,13 +285,14 @@
                     this.render();
                     
                     if (successfulAssets.length > 0) {
-                        let message = `✅ ${successfulAssets.length} assets récupérés avec succès:\n${successfulAssets.join(', ')}`;
+                        let message = `✅ ${successfulAssets.length}/${this.state.assets.length} assets récupérés avec succès:\n${successfulAssets.join(', ')}`;
                         if (failedAssets.length > 0) {
                             message += `\n\n⚠️ Échecs (${failedAssets.length}):\n${failedAssets.join('\n')}`;
                         }
+                        message += `\n\n⏱️ Temps total: ~${Math.ceil((successfulAssets.length * 3 + (batches.length - 1) * BATCH_DELAY/1000) / 60)} min`;
                         alert(message);
                     } else {
-                        alert('❌ Aucun asset n\'a pu être récupéré. Causes possibles:\n- Rate limiting API CoinGecko\n- Problème de connexion\n- IDs invalides\n\n💡 Essaie de réduire le nombre d\'assets ou attends quelques minutes.');
+                        alert('❌ Aucun asset n\'a pu être récupéré. Causes possibles:\n- Rate limiting API CoinGecko\n- Problème de connexion\n- IDs invalides\n\n💡 Vérifie ta connexion et réessaie.');
                     }
                     
                 } catch (error) {
@@ -529,23 +556,23 @@
                         </div>
 
                         <div class="bg-yellow-900/20 border border-yellow-600 rounded-lg p-6 mb-4">
-                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Notes importantes</h3>
+                            <h3 class="text-lg font-bold text-yellow-400 mb-3">⚠️ Système de batch automatique</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• Certaines cryptos récentes peuvent ne pas avoir ${this.state.period} jours d'historique</li>
-                                <li>• L'API CoinGecko gratuite est limitée (10-30 req/min)</li>
-                                <li>• Un délai de 2.5s est appliqué entre chaque requête</li>
+                                <li>• <strong>Max 4 assets par batch</strong> pour respecter l'API gratuite</li>
+                                <li>• <strong>Pause de 12s entre chaque batch</strong> de 4 assets</li>
+                                <li>• Tu peux ajouter jusqu'à 10 assets, mais ça prendra plus de temps</li>
+                                <li>• Exemple: 8 assets = 2 batches = ~30 secondes total</li>
                                 <li>• Si un asset échoue, les autres continueront</li>
-                                <li>• Évite de récupérer trop d'assets d'un coup (max 5-6 recommandé)</li>
                             </ul>
                         </div>
 
                         <div class="bg-blue-900/20 border border-blue-600 rounded-lg p-6">
-                            <h3 class="text-lg font-bold text-blue-400 mb-3">💡 Tips anti-rate-limit</h3>
+                            <h3 class="text-lg font-bold text-blue-400 mb-3">⏱️ Temps estimé</h3>
                             <ul class="space-y-2 text-sm text-slate-300">
-                                <li>• Commence avec 2-3 assets pour tester</li>
-                                <li>• Attends 1-2 min entre chaque batch</li>
-                                <li>• Si erreur persistante, réduis la période (7-14 jours)</li>
-                                <li>• L'app gère automatiquement les retries (3 tentatives)</li>
+                                <li>• 1-4 assets: ~12-15 secondes</li>
+                                <li>• 5-8 assets: ~30-35 secondes (2 batches)</li>
+                                <li>• 9-10 assets: ~50-55 secondes (3 batches)</li>
+                                <li>• Le système gère tout automatiquement !</li>
                             </ul>
                         </div>
                     </div>
